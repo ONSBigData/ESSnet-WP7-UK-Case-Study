@@ -5,6 +5,8 @@ import base64
 import requests
 import json
 import re
+import time
+from bs4 import BeautifulSoup
 
 
 
@@ -100,6 +102,13 @@ class Post(Item):
     reactions = Field()
     comment_count = Field()
     share_count = Field()
+    article_title = Field()
+    authors = Field()
+    main_category = Field()
+    categories = Field()
+    tags = Field()
+
+
 
 def process_comment(c):
     item = Comment()
@@ -135,6 +144,21 @@ def process_post(p):
     return item
 
 
+def get_extra(url):
+    if not urlparse(url).netloc == 'www.theguardian.com':
+        return None
+    response = requests.get(url)
+    time.sleep(2)
+    print "Response received from %s" %url
+    soup = BeautifulSoup(response.text, "lxml")
+    tags = [tag.text.strip() for tag in soup.findAll('a', attrs={'class': 'submeta__link'})]
+    article_title = soup.find(attrs={'itemprop': 'headline'}).text.strip()
+    authors = [author.text.strip() for author in soup.findAll('span', attrs={'itemprop': 'author'})]
+    categories = list({category.text.strip().lower() for category in soup.findAll('a', attrs={'class': 'signposting__action'})})
+    main_category = re.search(re.compile(r'theguardian\.com\/([\w-]*)'), url).group(1)
+    return {'tags':tags, 'article_title':article_title,
+            'authors': authors, 'categories': categories,
+            'main_category' : main_category}
 
 
 
@@ -175,6 +199,9 @@ for post in guardian_posts:
 mongo = Mongo('facebook', 'posts')
 
 for post in posts_list:
+    extra = get_extra(post['article_url'])
+    if extra:
+        post.update(extra)
     mongo.process_item(post)
 mongo.close()
 
