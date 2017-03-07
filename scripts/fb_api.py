@@ -168,7 +168,7 @@ guardian_id = '10513336322'
 
 graph = GraphAPI(access_token)
 guardian_posts = graph.get_all_connections(guardian_id, 'posts',
-                                           since='1488153600', until='1488240000',
+                                           since='1488326400', until='1488412800',
                                            limit=100,
                                            fields='message,created_time,id,link,shares,comments.limit(0).summary(total_count)')
 comments_list = []
@@ -195,17 +195,20 @@ for post in guardian_posts:
                 second_level_comment = process_comment(second_level_comment)
                 comments_list.append(second_level_comment)
 
-# Inserting
-mongo = Mongo('facebook', 'posts')
-
+# Adding extra bits from the guardian
 for post in posts_list:
     extra = get_extra(post['article_url'])
     if extra:
         post.update(extra)
+# Inserting comments and posts
+mongo = Mongo('facebook', 'posts')
+for post in posts_list:
     mongo.process_item(post)
 mongo.close()
+del mongo
 
 mongo = Mongo('facebook', 'comments')
 for comment in comments_list:
     mongo.process_item(comment)
 mongo.close()
+del mongo
