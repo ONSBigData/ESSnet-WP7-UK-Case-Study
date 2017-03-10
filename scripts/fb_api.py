@@ -7,6 +7,7 @@ import json
 import re
 import time
 from bs4 import BeautifulSoup
+import datetime
 
 
 
@@ -161,6 +162,19 @@ def get_extra(url):
             'main_category' : main_category}
 
 
+DAYS_DIFF = 6
+epoch = datetime.datetime.utcfromtimestamp(0)
+
+today = datetime.datetime.combine(datetime.date.today(),
+                                  datetime.time(0,0))
+
+def get_epochs(dd):
+    date = today - datetime.timedelta(dd)
+    delta = date - epoch
+    return "{:.9f}".format(delta.total_seconds())
+
+
+day_start, day_end = [get_epochs(x) for x in (DAYS_DIFF, DAYS_DIFF-1)]
 
 
 
@@ -168,7 +182,7 @@ guardian_id = '10513336322'
 
 graph = GraphAPI(access_token)
 guardian_posts = graph.get_all_connections(guardian_id, 'posts',
-                                           since='1488326400', until='1488412800',
+                                           since='1488499200', until='1488585600',
                                            limit=100,
                                            fields='message,created_time,id,link,shares,comments.limit(0).summary(total_count)')
 comments_list = []
