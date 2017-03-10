@@ -171,7 +171,7 @@ today = datetime.datetime.combine(datetime.date.today(),
 def get_epochs(dd):
     date = today - datetime.timedelta(dd)
     delta = date - epoch
-    return "{:.9f}".format(delta.total_seconds())
+    return "{:.0f}".format(delta.total_seconds())
 
 
 day_start, day_end = [get_epochs(x) for x in (DAYS_DIFF, DAYS_DIFF-1)]
@@ -182,7 +182,7 @@ guardian_id = '10513336322'
 
 graph = GraphAPI(access_token)
 guardian_posts = graph.get_all_connections(guardian_id, 'posts',
-                                           since='1488499200', until='1488585600',
+                                           since=day_start, until=day_end,
                                            limit=100,
                                            fields='message,created_time,id,link,shares,comments.limit(0).summary(total_count)')
 comments_list = []
