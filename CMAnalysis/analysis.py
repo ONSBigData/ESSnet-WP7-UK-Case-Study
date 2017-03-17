@@ -200,7 +200,7 @@ for i, v in zip(child_sentiments_mean, parentsentiment):
     if ~np.isnan(i) and ~np.isnan(v):
         x.append(abs(i))
         y.append(abs(v))
-# Child Sentiment (Numpy array)
+# Child Sentiment Mean(Numpy array)
 csm = np.array(x)
 # Parent Sentiment (Numpy array)
 ps = np.array(y)
@@ -211,11 +211,11 @@ print('Linear regression using stats.linregress')
 fit = ps * gradient + intercept
 plt.scatter(ps, csm, s = 1, label = 'Scatter Plot Parent vs Child', c = 'b')
 plt.plot(ps, fit, label = 'Linear Regression Fit', c='c')
-plt.title('Absolute Parent Sentiment vs Absolute Child Sentiment (Grouped) - Linear Regression Fit\n'
+plt.title('Absolute Parent Sentiment vs Absolute Child Sentiment Mean (Grouped) - Linear Regression Fit\n'
           'R 2 = {}'.format(round(r_value ** 2, 4)))
 plt.legend()
 plt.xlabel('Parent Sentiment (Absolute)')
-plt.ylabel('Child Sentiment (Grouped) (Absolute)')
+plt.ylabel('Child Sentiment Mean(Grouped) (Absolute)')
 plt.xlim([0, 1])
 plt.ylim([0, 1])
 
@@ -266,7 +266,7 @@ plt.title('Article Title Sentiment vs Article Description Sentiment'
 # plt.title('Article Title Sentiment vs Article Description Sentiment')
 plt.legend()
 plt.xlabel('Article Title Sentiment')
-plt.ylabel('Article Descriptioni Sentiment')
+plt.ylabel('Article Description Sentiment')
 plt.xlim([0, 1])
 plt.ylim([0, 1])
 
@@ -340,8 +340,12 @@ A = []
 for i in article_comments_sentiment:
     A.append(np.zeros(len(i)))
 
-for i in range(0,len(A)):
-    for j in article_comments_sentiment[i]:
+
+# Will need to investigate it like this.
+for i, aa in enumerate(A):
+    print i, aa
+    for j, k in enumerate(aa):
+        print j, k
         A[i][j] = article_message_sentiment[i]
 
 
