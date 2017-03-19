@@ -60,6 +60,7 @@ class GraphAPI(object):
                 FACEBOOK_GRAPH_URL + path,
                 params=args)
             print response.status_code
+            time.sleep(1)
         except requests.HTTPError as e:
             raise
         headers = response.headers
@@ -146,6 +147,8 @@ def process_post(p):
 
 
 def get_extra(url):
+    if url is None:
+        return None
     if not urlparse(url).netloc == 'www.theguardian.com':
         return None
     response = requests.get(url)
@@ -193,6 +196,10 @@ for post in guardian_posts:
     post.update(reactions)
     post = process_post(post)
     posts_list.append(post)
+
+for idx, post in enumerate(posts_list):
+    post_id = post['post_id']
+    print "Extracting %d comments for post %d ..." %(post['comment_count'], idx)
     comments = graph.get_all_connections(post_id, 'comments',
                                          limit=100,
                                          fields='created_time,from,like_count,message,id,comment_count')
