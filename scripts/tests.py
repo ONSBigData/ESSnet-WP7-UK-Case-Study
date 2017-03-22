@@ -25,8 +25,8 @@ docs['created_time'] = pd.to_datetime(docs['created_time'],format="%Y-%m-%dT%H:%
 docs.set_index('created_time', inplace = True)
 
 # Comments Volume per day
-docs.resample('D').count()['comment_id'].plot(legend=True, label = 'Comments Volume per day')
-
+docs.resample('D').count()['comment_id'].plot(legend=True, label = 'Comments Volume per Day')
+docs.resample('H').count()['comment_id'].plot(legend=True, label = 'Comments Volume per Hour')
 
 
 
