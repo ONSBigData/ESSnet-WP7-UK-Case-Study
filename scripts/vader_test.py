@@ -1,5 +1,6 @@
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk import tokenize
+import pandas as pd
 
 
 my_example_text = """I begin this story with a neutral statement.
@@ -35,3 +36,8 @@ vader_vector = []
 for sentence in s_v:
     vs = analyzer.polarity_scores(sentence)
     vader_vector.append(vs['compound'])
+    print("{:-<69} {}".format(sentence, str(vs["compound"])))
+
+# show the lexicon
+lex = analyzer.make_lex_dict()
+print pd.Series(lex.values()).describe()
