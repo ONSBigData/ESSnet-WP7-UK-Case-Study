@@ -19,25 +19,29 @@ syuzhet_vector <- get_sentiment(s_v, method="syuzhet")
 bing_vector <- get_sentiment(s_v, method="bing")
 afinn_vector <- get_sentiment(s_v, method="afinn")
 nrc_vector <- get_sentiment(s_v, method="nrc")
+# from python
+vader_vector <- c(0.0,0.101,0.0516,0.6115,0.0,-0.5256,0.0,-0.7783,-0.5423,0.4588,0.7698,0.636)
 
+# Pos vs Neg
 rbind(
   sign(syuzhet_vector),
   sign(bing_vector),
   sign(afinn_vector),
-  sign(nrc_vector)
+  sign(nrc_vector),
+  sign(vader_vector)
 )
 
 all_methods <- as.data.frame(cbind(syuzhet_vector, 
                                    bing_vector, 
                                    afinn_vector, 
                                    nrc_vector,
-                                   sent = 1:12))
+                                   vader_vector))
 
 # Simple rescaling of y axis from -1 to 1
 # To rescale also the x axis use rescale_x_2
-rescaled_all = data.frame(all_methods[5], apply(all_methods[1:4],2, rescale) )
+rescaled_all = data.frame(sent = 1:12, apply(all_methods,2, rescale) )
 rescaled_all %>%
-  gather(key,value, syuzhet_vector, bing_vector, afinn_vector, nrc_vector) %>%
+  gather(key,value, syuzhet_vector, bing_vector, afinn_vector, nrc_vector, vader_vector) %>%
   ggplot(aes(x=sent, y=value, colour=key)) +
   geom_line()
 
@@ -51,13 +55,14 @@ simple_plot(syuzhet_vector)
 simple_plot(bing_vector)
 simple_plot(afinn_vector)
 simple_plot(nrc_vector)
+simple_plot(vader_vector)
 
 
 # Euclidean distance bwtween methods (0 indicates perfect match)
-dist(t(rescaled_all[2:5]))
+dist(t(rescaled_all[-1]))
 
 # Correlations
-cor(rescaled_all[2:5])
+cor(rescaled_all[-1])
 
 nrc_data <- get_nrc_sentiment(s_v)
 barplot(
@@ -68,5 +73,8 @@ barplot(
   main = "Emotions in Sample text", xlab="Percentage"
 )
 
-
+write.csv(bing, "bing.csv", quote=F, row.names=F)
+write.csv(afinn, "afinn.csv", quote=F, row.names=F)
+write.csv(syuzhet_dict, "syuzhet.csv", quote=F, row.names=F)
+write.csv(nrc, "nrc.csv", quote=F)
 
