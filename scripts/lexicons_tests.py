@@ -54,7 +54,12 @@ rescaled.plot()
 
 emotions = get_nrc_emotions(df['message'])
 
-emotions.set_index(pd.to_datetime(df['created_time'])).resample('H').sum().plot()
+emotions.set_index(pd.to_datetime(df['created_time'])).plot()
+emotions.set_index(pd.to_datetime(df['created_time'])).resample('H').mean().plot()
+
+df['created_time']=pd.to_datetime(df['created_time'])
+df.set_index(pd.to_datetime(df.index), inplace=True)
+df.resample('H').count()['comment_id'].plot(legend=True, label='Volume')
 
 # Correlation matrix between methods
 rescaled.corr()
