@@ -1,6 +1,7 @@
 library(syuzhet)
 library(ggplot2)
 library(tidyr)
+library(dplyr)
 my_example_text <- "I begin this story with a neutral statement.  
 Basically this is a very silly test.  
 You are testing the Syuzhet package using short, inane sentences.  
@@ -37,14 +38,39 @@ all_methods <- as.data.frame(cbind(syuzhet_vector,
                                    nrc_vector,
                                    vader_vector))
 
+
+
+veder_rescale <- function(score, alpha=15){
+  norm_score = score/sqrt((score*score) + alpha)
+  norm_score[which(norm_score > 1)] = 1
+  norm_score[which(norm_score < -1)] = -1
+  return(norm_score)
+}
+
+
 # Simple rescaling of y axis from -1 to 1
 # To rescale also the x axis use rescale_x_2
-rescaled_all = data.frame(sent = 1:12, apply(all_methods,2, rescale) )
-rescaled_all %>%
+simple_rescaled_all = data.frame(sent = 1:12, apply(all_methods[1:4],2, rescale),  all_methods[5] )
+simple_rescaled_all %>%
   gather(key,value, syuzhet_vector, bing_vector, afinn_vector, nrc_vector, vader_vector) %>%
   ggplot(aes(x=sent, y=value, colour=key)) +
   geom_line()
 
+
+
+# Vader rescaled all.
+vader_rescaled_all = data.frame(sent = 1:12, apply(all_methods[1:4],2, veder_rescale), all_methods[5] )
+vader_rescaled_all %>%
+  gather(key,value, syuzhet_vector, bing_vector, afinn_vector, nrc_vector, vader_vector) %>%
+  ggplot(aes(x=sent, y=value, colour=key)) +
+  geom_line()
+
+
+# How many mantain the same sign after rescale ? 
+mean(sign(all_methods$syuzhet_vector) == sign(simple_rescaled_all$syuzhet_vector))
+mean(sign(all_methods$syuzhet_vector) == sign(vader_rescaled_all$syuzhet_vector))
+# vader_rescale mantains the sign after riscaling, which is more sensible than the simple
+# rescaling method
 
 
 # simple plot - 3 types of smoothing applied
@@ -73,6 +99,10 @@ barplot(
   main = "Emotions in Sample text", xlab="Percentage"
 )
 
+
+  
+
+load("sysdata.rda") # download master from here https://github.com/mjockers/syuzhet
 write.csv(bing, "bing.csv", quote=F, row.names=F)
 write.csv(afinn, "afinn.csv", quote=F, row.names=F)
 write.csv(syuzhet_dict, "syuzhet.csv", quote=F, row.names=F)
