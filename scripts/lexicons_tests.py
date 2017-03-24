@@ -2,7 +2,15 @@ from sklearn.feature_extraction.text import CountVectorizer
 import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
+from nltk.sentiment.vader import normalize
+import matplotlib.pyplot as plt
+import seaborn; seaborn.set()
+from nltk import sent_tokenize
 
+df = pd.read_csv('fb-comments-t-sentiment.csv', encoding='utf-8')
+df = df[df.message.notnull()]
+df['n_sents'] = df.message.apply(lambda x: len(sent_tokenize(x)))
+df.set_index(pd.to_datetime(df['created_time']), inplace = True)
 # Load all others dictionaries
 bing = pd.read_csv("bing.csv")
 bing.drop_duplicates('word', inplace = True)
@@ -18,8 +26,10 @@ nrc = pd.read_csv("nrc.csv", header=0, names = [u'word', u'anger', u'anticipatio
 nrc.drop_duplicates('word', inplace = True)
 nrc['value'] = nrc['positive']-nrc['negative']
 
-def rescale(x):
+def rescale(x): # it doesn't guarantee sign is kept
     return  2 * (x - min(x))/(max(x) - min(x)) - 1
+
+
 
 def get_scores(text, vocab):
     vectorizer = CountVectorizer(vocabulary=vocab['word'])
@@ -44,13 +54,19 @@ afinn_scores = get_scores(df['message'], afinn)
 syuzhet_scores = get_scores(df['message'], syuzhet)
 nrc_scores = get_scores(df['message'], nrc)
 
-rescaled = pd.DataFrame({'bing': bing_scores,
+all_methods = pd.DataFrame({'bing': bing_scores,
               'afinn': afinn_scores,
               'syuzhet': syuzhet_scores,
               'nrc': nrc_scores},
-              index=pd.to_datetime(df['created_time'])).apply(rescale)
+              index=pd.to_datetime(df['created_time'])).div(df.n_sents, axis='index')
 
-rescaled.plot()
+simple_rescaled = all_methods.apply(rescale)
+
+simple_rescaled.plot()
+
+vader_rescaled = all_methods.apply(lambda x: map(normalize, x))
+
+vader_rescaled.plot()
 
 emotions = get_nrc_emotions(df['message'])
 
@@ -62,6 +78,7 @@ df.set_index(pd.to_datetime(df.index), inplace=True)
 df.resample('H').count()['comment_id'].plot(legend=True, label='Volume')
 
 # Correlation matrix between methods
-rescaled.corr()
+simple_rescaled.corr()
 
-rescaled.resample('.5*H').mean().plot()
+simple_rescaled.resample('.5*H').mean().plot()
+vader_rescaled.resample('H').mean().plot()
