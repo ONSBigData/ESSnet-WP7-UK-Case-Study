@@ -24,8 +24,8 @@ df = pd.DataFrame(data)
 # < 2 > Calculate Sentiment for a particular paragraph
 def paragraph_sentiment(paragraph):
 
-    print type(paragraph)
-    print paragraph
+    # print type(paragraph)
+    # print paragraph
 
     sid = SentimentIntensityAnalyzer()
     # Returns Nan by defiinition in here.
@@ -47,19 +47,41 @@ def paragraph_sentiment(paragraph):
         # print len(sentences)
         numofsents = float(len(sentences))
         normalisedcompoundscore = score / numofsents
-        return normalisedcompoundscore
+
+        # Normalise each value for the comment paragraph
+        ns = score / numofsents
+        np = pos / numofsents
+        ng = neg / numofsents
+        nn = neu / numofsents
+
+
+        # return normalisedcompoundscore
+        # return pd.Series([ns, np, ng, nn], index=['Score', 'Pos', 'Neg', 'Neu'])
+        return ns, np, ng, nn
 
     else:
         # Else, Return Nan if no Paragraph present
-        return float('NaN')
+        # return float('NaN')
+        # return pd.Series([float('NaN'), float('NaN'), float('NaN'), float('NaN')], index=['Score', 'Pos', 'Neg', 'Neu'])
+        return float('NaN'), float('NaN'), float('NaN'), float('NaN')
+# def f(x):
+#     .....:   return pd.Series([x, x ** 2], index=['x', 'x^2'])
 
 # Calculate Sentiment for each Facebook Comment, Return in new column
-df['sentiment'] = df['message'].apply(lambda x: paragraph_sentiment(x))
+# df['sentiment'] = df['message'][0:10].apply(lambda x: paragraph_sentiment(x))
+
+df['message_score'] = 0
+df['message_pos'] = 0
+df['message_neg'] = 0
+df['message_neu'] = 0
+df['message_score'], df['message_pos'], df['message_neg'], df['message_neu'] = zip(*df['message'].map(paragraph_sentiment))
+
+
 # Calculate the Word count for each Facebook Comment, Return in new column
 df['word count'] = df['message'].apply(lambda x: len(tokenize.word_tokenize(x)))
 
 # Save this new dataframe to csv
-df.to_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-comments-t-sentiment.csv', encoding='utf-8')
+df.to_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-comments-t-sentiment-test.csv', encoding='utf-8')
 print 'Finish'
 
 
@@ -82,13 +104,30 @@ columns = list(df)
 # Drop all rows with NA in one of the rows
 # Discuss this with Alessandra - need to implement a standard for all work.
 df.dropna(subset=['article_title', 'message'], inplace=True)
+
+
 # Calculate Snetiment on the Article Message
-df['message_sentiment'] = df.message.apply(lambda x: paragraph_sentiment(x))
+# df['message_sentiment'] = df.message[0:10].apply(lambda x: paragraph_sentiment(x))
+
+df['article_message_score'] = 0
+df['article_message_pos'] = 0
+df['article_message_neg'] = 0
+df['article_message_neu'] = 0
+df['article_message_score'], df['article_message_pos'], df['article_message_neg'], df['article_message_neu'] = zip(*df.message.map(paragraph_sentiment))
+
+
 # Calculate Sentiment on the Article Title
-df['article_title_sentiment'] = df.article_title.apply(lambda x: paragraph_sentiment(x))
+# df['article_title_sentiment'] = df.article_title[0:10].apply(lambda x: paragraph_sentiment(x))
+
+df['article_title_score'] = 0
+df['article_title_pos'] = 0
+df['article_title_neg'] = 0
+df['article_title_neu'] = 0
+df['article_title_score'], df['article_title_pos'], df['article_title_neg'], df['article_title_neu'] = zip(*df.article_title.map(paragraph_sentiment))
+
 
 # Save to new Csv File
-df.to_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-posts-sentiment.csv', encoding='utf-8')
+df.to_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-posts-sentiment-test.csv', encoding='utf-8')
 
 
 # Importing that Didn't Work:
