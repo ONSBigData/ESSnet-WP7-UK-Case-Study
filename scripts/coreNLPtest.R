@@ -40,11 +40,12 @@ all_methods <- as.data.frame(cbind(syuzhet_vector,
 
 
 
-veder_rescale <- function(score, alpha=15){
-  norm_score = score/sqrt((score*score) + alpha)
-  norm_score[which(norm_score > 1)] = 1
-  norm_score[which(norm_score < -1)] = -1
-  return(norm_score)
+veder_rescale <- function(scores, alpha=15){
+  # scores is a vectore, whereas in the original implementation in python is a number 
+  norm_scores = scores/sqrt((scores*scores) + alpha)
+  norm_scores[which(norm_scores > 1)] = 1
+  norm_scores[which(norm_scores < -1)] = -1
+  return(norm_scores)
 }
 
 
@@ -88,7 +89,7 @@ simple_plot(vader_vector)
 dist(t(rescaled_all[-1]))
 
 # Correlations
-cor(rescaled_all[-1])
+cor(vader_rescaled_all[-1])
 
 nrc_data <- get_nrc_sentiment(s_v)
 barplot(
