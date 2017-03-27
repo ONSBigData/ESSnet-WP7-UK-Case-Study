@@ -60,6 +60,7 @@ class GraphAPI(object):
                 FACEBOOK_GRAPH_URL + path,
                 params=args)
             print response.status_code
+            time.sleep(1)
         except requests.HTTPError as e:
             raise
         headers = response.headers
@@ -146,6 +147,8 @@ def process_post(p):
 
 
 def get_extra(url):
+    if url is None:
+        return None
     if not urlparse(url).netloc == 'www.theguardian.com':
         return None
     response = requests.get(url)
@@ -153,7 +156,9 @@ def get_extra(url):
     print "Response received from %s" %url
     soup = BeautifulSoup(response.text, "lxml")
     tags = [tag.text.strip() for tag in soup.findAll('a', attrs={'class': 'submeta__link'})]
-    article_title = soup.find(attrs={'itemprop': 'headline'}).text.strip()
+    article_title = soup.find(attrs={'itemprop': 'headline'})
+    if article_title:
+        article_title= article_title.text.strip()
     authors = [author.text.strip() for author in soup.findAll('span', attrs={'itemprop': 'author'})]
     categories = list({category.text.strip().lower() for category in soup.findAll('a', attrs={'class': 'signposting__action'})})
     main_category = re.search(re.compile(r'theguardian\.com\/([\w-]*)'), url).group(1)
@@ -193,6 +198,24 @@ for post in guardian_posts:
     post.update(reactions)
     post = process_post(post)
     posts_list.append(post)
+
+
+# Adding extra bits from the guardian
+for post in posts_list:
+    extra = get_extra(post['article_url'])
+    if extra:
+        post.update(extra)
+# Inserting comments and posts
+mongo = Mongo('facebook', 'posts')
+for post in posts_list:
+    mongo.process_item(post)
+mongo.close()
+del mongo
+
+
+for idx, post in enumerate(posts_list):
+    post_id = post['post_id']
+    print "Extracting %d comments for post %d ..." %(post['comment_count'], idx)
     comments = graph.get_all_connections(post_id, 'comments',
                                          limit=100,
                                          fields='created_time,from,like_count,message,id,comment_count')
@@ -208,18 +231,6 @@ for post in guardian_posts:
                 second_level_comment.update({'post_id':post_id})
                 second_level_comment = process_comment(second_level_comment)
                 comments_list.append(second_level_comment)
-
-# Adding extra bits from the guardian
-for post in posts_list:
-    extra = get_extra(post['article_url'])
-    if extra:
-        post.update(extra)
-# Inserting comments and posts
-mongo = Mongo('facebook', 'posts')
-for post in posts_list:
-    mongo.process_item(post)
-mongo.close()
-del mongo
 
 mongo = Mongo('facebook', 'comments')
 for comment in comments_list:
