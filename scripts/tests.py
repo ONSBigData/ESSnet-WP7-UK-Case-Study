@@ -79,7 +79,31 @@ docs[docs['parent_id'].isnull()][['pos', 'neg']].resample('D').mean().plot()
 
 
 p = posts[posts['main_category'] == 'politics']['post_id']
-docs[docs['post_id'].isin(p)][['pos', 'neg']].resample('H').mean().plot()
+posts['created_time'] = pd.to_datetime(posts['created_time'],format="%Y-%m-%dT%H:%M:%S+0000")
+posts.set_index('created_time', inplace=True)
+
+import datetime
+
+fig = plt.figure(figsize=(10,20))
+fig.suptitle('Politics Posts', fontsize=16, fontweight='bold')
+n=3
+datemin = datetime.date(2017, 2, 27)
+datemax = datetime.date(2017, 3, 20)
+
+axes = [plt.subplot(n,1,i) for i in range(1, n + 1)]
+ax = axes[0]
+pv=ax.plot(posts[posts['post_id'].isin(p)].resample('D').count()['post_id'])
+ax.set_xlim(datemin, datemax)
+ax.set_ylabel("Posts Volume")
+ax = axes[1]
+v=ax.plot(docs[docs['post_id'].isin(p)].resample('D').count()['pos'])
+ax.set_xlim(datemin, datemax)
+ax.set_ylabel("Comments Volume")
+ax = axes[2]
+pn=ax.plot(docs[docs['post_id'].isin(p)][['pos', 'neg']].apply(lambda x: map(normalize, x)).resample('D').mean())
+ax.legend(pn, ["Pos", "Neg"])
+ax.set_xlim(datemin, datemax)
+ax.set_ylabel("NRC Sentiment")
 
 posts.groupby('main_category').count()['categories'].plot(kind='barh')
 
