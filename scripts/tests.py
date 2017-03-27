@@ -93,12 +93,13 @@ all_methods = pd.DataFrame({'bing': bing_scores,
               'nrc': nrc_scores},
               index=pd.to_datetime(docs.index)).div(docs.n_sents, axis='index')
 
-
+emotions = get_nrc_emotions(docs['message'])
+emotions.set_index(docs.index, inplace = True)
 import datetime
 
 fig = plt.figure(figsize=(10,20))
 fig.suptitle('Politics Posts', fontsize=16, fontweight='bold')
-n=4
+n=5
 datemin = datetime.date(2017, 2, 27)
 datemax = datetime.date(2017, 3, 20)
 
@@ -121,6 +122,13 @@ am=ax.plot(all_methods[docs['post_id'].isin(p)].apply(lambda x: map(normalize, x
 ax.legend(am, [u'afinn', u'bing', u'nrc', u'syuzhet'], loc=0)
 ax.set_xlim(datemin, datemax)
 ax.set_ylabel("All overall Sentiment")
+ax = axes[4]
+e=ax.plot(emotions[docs['post_id'].isin(p)].resample('D').mean())
+ax.legend(e, emotions.columns, loc=0)
+ax.set_xlim(datemin, datemax)
+ax.set_ylabel("NRC Emotions")
+
+
 # Correlation between comments count and posts count (0.88)
 pd.concat([posts[posts['post_id'].isin(p)].resample('D').count()['post_id'], docs[docs['post_id'].isin(p)].resample('D').count()['pos']], axis=1).corr()
 
