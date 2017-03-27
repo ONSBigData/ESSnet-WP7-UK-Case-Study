@@ -60,7 +60,7 @@ class GraphAPI(object):
                 FACEBOOK_GRAPH_URL + path,
                 params=args)
             print response.status_code
-            time.sleep(2)
+            time.sleep(1)
         except requests.HTTPError as e:
             raise
         headers = response.headers
@@ -156,7 +156,9 @@ def get_extra(url):
     print "Response received from %s" %url
     soup = BeautifulSoup(response.text, "lxml")
     tags = [tag.text.strip() for tag in soup.findAll('a', attrs={'class': 'submeta__link'})]
-    article_title = soup.find(attrs={'itemprop': 'headline'}).text.strip()
+    article_title = soup.find(attrs={'itemprop': 'headline'})
+    if article_title:
+        article_title= article_title.text.strip()
     authors = [author.text.strip() for author in soup.findAll('span', attrs={'itemprop': 'author'})]
     categories = list({category.text.strip().lower() for category in soup.findAll('a', attrs={'class': 'signposting__action'})})
     main_category = re.search(re.compile(r'theguardian\.com\/([\w-]*)'), url).group(1)
