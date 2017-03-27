@@ -38,6 +38,14 @@ def get_scores(text, vocab):
     scores  = vect.dot(values)
     return scores
 
+
+def get_nrc_scores(text):
+    vectorizer = CountVectorizer(vocabulary=nrc['word'])
+    vect = vectorizer.fit_transform(text)
+    values = nrc[['positive','negative']].as_matrix()
+    scores  = vect.dot(values)
+    return scores
+
 def get_nrc_emotions(text):
     vectorizer = CountVectorizer(vocabulary=nrc['word'])
     vect = vectorizer.fit_transform(text)
@@ -66,7 +74,11 @@ simple_rescaled.plot()
 
 vader_rescaled = all_methods.apply(lambda x: map(normalize, x))
 
-vader_rescaled.plot()
+vader_rescaled[vader_rescaled['afinn'] != 0]['afinn'].plot()
+vader_rescaled[vader_rescaled['afinn'] != 0]['afinn'].resample('H').mean().plot()
+
+vader_rescaled[vader_rescaled['afinn'] > 0]['afinn'].resample('4H').mean().plot(legend=True, label='Positives')
+vader_rescaled[vader_rescaled['afinn'] < 0]['afinn'].resample('4H').mean().plot(legend=True, label='Negatives')
 
 emotions = get_nrc_emotions(df['message'])
 
