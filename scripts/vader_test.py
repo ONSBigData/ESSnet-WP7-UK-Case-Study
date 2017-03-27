@@ -18,6 +18,8 @@ You might even say it's beautiful!"""
 s_v = tokenize.sent_tokenize(my_example_text)
 assert(len(s_v) == 12)
 
+df = pd.DataFrame({'text':s_v})
+
 analyzer = SentimentIntensityAnalyzer()
 
 # The 'compound' score is computed by summing the valence scores of each
@@ -41,3 +43,27 @@ for sentence in s_v:
 # show the lexicon
 lex = analyzer.make_lex_dict()
 print pd.Series(lex.values()).describe()
+
+
+def paragraph_sentiment(paragraph):
+    sid = SentimentIntensityAnalyzer()
+    if paragraph:
+        sentences = tokenize.sent_tokenize(paragraph)
+        score = 0.0
+        for sentence in sentences:
+            ss = sid.polarity_scores(sentence)
+            score += ss['compound']
+        numofsents = float(len(sentences))
+        normalisedcompoundscore = score / numofsents
+        return normalisedcompoundscore
+
+    else:
+        return float('NaN')
+
+
+import time
+
+start = time.time()
+res = df.text.apply(paragraph_sentiment)
+end = time.time()
+print(end - start)
