@@ -82,11 +82,23 @@ p = posts[posts['main_category'] == 'politics']['post_id']
 posts['created_time'] = pd.to_datetime(posts['created_time'],format="%Y-%m-%dT%H:%M:%S+0000")
 posts.set_index('created_time', inplace=True)
 
+bing_scores = get_scores(docs['message'], bing)
+afinn_scores = get_scores(docs['message'], afinn)
+syuzhet_scores = get_scores(docs['message'], syuzhet)
+nrc_scores = get_scores(docs['message'], nrc)
+docs['n_sents'] = docs.message.apply(lambda x: len(sent_tokenize(x)))
+all_methods = pd.DataFrame({'bing': bing_scores,
+              'afinn': afinn_scores,
+              'syuzhet': syuzhet_scores,
+              'nrc': nrc_scores},
+              index=pd.to_datetime(docs.index)).div(docs.n_sents, axis='index')
+
+
 import datetime
 
 fig = plt.figure(figsize=(10,20))
 fig.suptitle('Politics Posts', fontsize=16, fontweight='bold')
-n=3
+n=4
 datemin = datetime.date(2017, 2, 27)
 datemax = datetime.date(2017, 3, 20)
 
@@ -104,6 +116,13 @@ pn=ax.plot(docs[docs['post_id'].isin(p)][['pos', 'neg']].apply(lambda x: map(nor
 ax.legend(pn, ["Pos", "Neg"])
 ax.set_xlim(datemin, datemax)
 ax.set_ylabel("NRC Sentiment")
+ax = axes[3]
+am=ax.plot(all_methods[docs['post_id'].isin(p)].apply(lambda x: map(normalize, x)).resample('D').mean())
+ax.legend(am, [u'afinn', u'bing', u'nrc', u'syuzhet'], loc=0)
+ax.set_xlim(datemin, datemax)
+ax.set_ylabel("All overall Sentiment")
+# Correlation between comments count and posts count (0.88)
+pd.concat([posts[posts['post_id'].isin(p)].resample('D').count()['post_id'], docs[docs['post_id'].isin(p)].resample('D').count()['pos']], axis=1).corr()
 
 posts.groupby('main_category').count()['categories'].plot(kind='barh')
 
