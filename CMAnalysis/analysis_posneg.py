@@ -7,6 +7,7 @@ import math
 from sklearn.linear_model import LinearRegression
 from sklearn import linear_model
 from scipy import stats
+import itertools
 
 # Analysis_posneg focusses on building from the previous work carried out in analysis
 # Here we look at analysing not just the overall score but
@@ -253,7 +254,7 @@ cb.set_label('log10(Counts)', fontsize = 15)
 
 fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 # A = df[df['comment_count'] !=0 ].comment_count.values
-A = df[df['comment_count'] >9 ].comment_count.values
+A = df[df['comment_count'] > 9].comment_count.values
 
 # A = A[A != 1]
 me = np.mean(A)
@@ -274,6 +275,9 @@ ax.set_ylabel('Frequency)', fontsize = 12)
 # Generate parent arrays for sentiment and word length
 # Parents comments can be distinguished by looking at the where the column column_count ! = 0
 parent_message_score = df[df['comment_count'] != 0].message_score.values
+parent_message_pos = df[df['comment_count'] != 0].message_pos.values
+parent_message_neg = df[df['comment_count'] != 0].message_neg.values
+parent_message_neu = df[df['comment_count'] != 0].message_neu.values
 parentwordlength = df[df['comment_count'] != 0].word_count.values
 
 # Now, keep only those that have non NaN elemnts for both word length and sentiment
@@ -282,12 +286,37 @@ parentwordlength = df[df['comment_count'] != 0].word_count.values
 parentindices = np.where(~(np.isnan(parentwordlength) | np.isnan(parent_message_score)))[0]
 # Extract sentiment and word length, for the above indices
 parent_message_score = parent_message_score[parentindices]
+parent_message_pos = parent_message_pos[parentindices]
+parent_message_neg = parent_message_neg[parentindices]
+parent_message_neu = parent_message_neu[parentindices]
 parentwordlength = parentwordlength[parentindices]
 
 
 # Plot histogram, scatter plot, and hexplot for the parent comments
-plt.hist(parent_message_score, bins = 1000, normed = True)
-plt.hist(parentwordlength, bins =1000, normed = True)
+fig, ((ax1,ax2),(ax3,ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(7, 4))
+# ax1.add_subplot(1,1,1)
+ax1.hist(parent_message_score, bins = 500, normed = False)
+ax1.set_xlabel('Sentiment')
+ax1.set_ylabel('Frequency')
+ax1.set_title('Parent Message Score')
+
+ax2.hist(parent_message_pos, bins = 500, normed = False)
+ax2.set_xlabel('Sentiment')
+ax2.set_ylabel('Frequency')
+ax2.set_title('Parent Pos Score')
+
+ax3.hist(parent_message_neg, bins = 500, normed = False)
+ax3.set_xlabel('Sentiment')
+ax3.set_ylabel('Frequency')
+ax3.set_title('Parent Neg Score')
+
+ax4.hist(parent_message_neu, bins = 500, normed = False)
+ax4.set_xlabel('Sentiment')
+ax4.set_ylabel('Frequency')
+ax4.set_title('Parent Neu Score')
+plt.suptitle('Frequency Plots for Parent Comment Sentiment Scores')
+
+
 # PLot a hexbin of parent comment word length vs parent comment sentiment
 plt.hexbin(parentwordlength, parent_message_score, gridsize = 50, bins = 'log')
 plt.scatter(parentwordlength, parent_message_score, s = 1)
@@ -333,6 +362,9 @@ parentwordlength = df[df['comment_count'] != 0].word_count.values
 
 parentindex = np.where(df['comment_count'] != 0)[0]
 child_sentiments = []
+child_sentiments_pos = []
+child_sentiments_neg = []
+child_sentiments_neu = []
 # Iterate over the indexes of parent comments
 # and their respective index in the list
 for i, index in enumerate(parentindex):
@@ -342,27 +374,57 @@ for i, index in enumerate(parentindex):
     if i == (len(parentindex) - 1):
         print 'last one'
         child_sentiments.append(df['message_score'][parentindex[-1] + 1:len(df['message_score']) - 1])
+        child_sentiments_pos.append(df['message_pos'][parentindex[-1] + 1:len(df['message_score']) - 1])
+        child_sentiments_neg.append(df['message_neg'][parentindex[-1] + 1:len(df['message_score']) - 1])
+        child_sentiments_neu.append(df['message_neu'][parentindex[-1] + 1:len(df['message_score']) - 1])
+
         break
     # Select all other parent - child groups after
     if index < len(df['message_score']):
         # Select those child comments with index between each parent comment
-        child_sentiments.append(df['message_score'] [parentindex[i]+1:parentindex[i+1]] )
+        child_sentiments.append(df['message_score'][parentindex[i] + 1:parentindex[i + 1]])
+        child_sentiments_pos.append(df['message_pos'][parentindex[i] + 1:parentindex[i + 1]])
+        child_sentiments_neg.append(df['message_neg'][parentindex[i] + 1:parentindex[i + 1]])
+        child_sentiments_neu.append(df['message_neu'][parentindex[i] + 1:parentindex[i + 1]])
 
 # Plot of all child sentiments for each post (chronological)
 for i in child_sentiments:
     plt.plot(i)
 plt.title('Plot of All Child Sentiments, Chronological, and Grouped by Parent Comment')
 
+for i in child_sentiments_pos:
+    plt.plot(i)
+plt.title('Plot of All Child Sentiments Positive, Chronological, and Grouped by Parent Comment')
+
+for i in child_sentiments_neg:
+    plt.plot(i)
+plt.title('Plot of All Child Sentiments Negative, Chronological, and Grouped by Parent Comment')
+
+for i in child_sentiments_neu:
+    plt.plot(i)
+plt.title('Plot of All Child Sentiments Neutral, Chronological, and Grouped by Parent Comment')
+
+
 # Generate mean values for each grouping of child posts
 # np.mean() will return NaN if any entry in the list is NaN
 # This means that some entries within child_sentiments_mean = NaN
 # We must remove these later
 child_sentiments_mean = []
-for i in child_sentiments:
+child_sentiments_pos_mean = []
+child_sentiments_neg_mean = []
+child_sentiments_neu_mean = []
+
+for i, j, k, v in zip(child_sentiments, child_sentiments_pos, child_sentiments_neg, child_sentiments_neu):
     child_sentiments_mean.append(np.mean(i))
+    child_sentiments_pos_mean.append(np.mean(j))
+    child_sentiments_neg_mean.append(np.mean(k))
+    child_sentiments_neu_mean.append(np.mean(v))
 
 # Plot the mean values for each post, scatter included
 plt.plot(child_sentiments_mean)
+plt.plot(child_sentiments_pos_mean)
+plt.plot(child_sentiments_neg_mean)
+plt.plot(child_sentiments_neu_mean)
 plt.scatter(np.linspace(0, len(child_sentiments_mean), len(child_sentiments_mean)),
             child_sentiments_mean,
             s=3)
@@ -385,10 +447,10 @@ x = []
 y = []
 # Select only those groups which have no nan values
 # See explanation above about np.mean()
-for i, v in zip(child_sentiments_mean, parentsentiment):
+for i, v in zip(child_sentiments_neu_mean, parent_message_score):
     if ~np.isnan(i) and ~np.isnan(v):
-        x.append(abs(i))
-        y.append(abs(v))
+        x.append(i)
+        y.append(v)
 # Child Sentiment Mean(Numpy array)
 csm = np.array(x)
 # Parent Sentiment (Numpy array)
@@ -416,8 +478,10 @@ plt.ylim([0, 1])
 #                                       and  article message sentiment
 
 # Read the in file containing sentiment on article title and sentiment on article message
-df2 = pd.read_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-posts-sentiment.csv', encoding='utf-8', index_col=0)
+df2 = pd.read_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-posts-sentiment-test.csv', encoding='utf-8', index_col=0)
 
+## Use the test file as it has the pos neg and nue
+## and then look at the correlation for pos neg and neu for name nad other
 
 # Choice between looking at the correlation between the raw -1 - 1 sentiment values
 # Here again, we look at the absolute value of sentiment
@@ -428,16 +492,27 @@ df2 = pd.read_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-posts-sentiment.
 
 # plt.scatter(map(abs, df2['article_title_sentiment']), map(abs, df2['message_sentiment']))
 
+
+# def regression_plot():
+#
+#
+#     return
+
+
+
 # Use map(abs, XX) to use the absolute values of the sentiment scores
+# gradient, intercept, r_value, p_value, std_err = stats.linregress(
+ #                                                       map(abs, df2['article_title_score']),
+  #                                                      map(abs, df2['article_message_score']))
 gradient, intercept, r_value, p_value, std_err = stats.linregress(
-                                                        map(abs, df2['article_title_sentiment']),
-                                                        map(abs, df2['message_sentiment']))
+                                                        df2['article_title_pos'],
+                                                        df2['article_message_pos'])
 print('Linear regression using stats.linregress')
 # Create the linear regression line
-fit = np.array(map(abs, df2['article_title_sentiment'])) * gradient + intercept
+fit = np.array(df2['article_title_pos']) * gradient + intercept
 # Scatter Plot of Absoluute Snetiment Values
-plt.scatter(map(abs, df2['article_title_sentiment']),
-            map(abs, df2['message_sentiment']),
+plt.scatter(df2['article_title_pos'],
+            df2['article_message_pos'],
             s = 5,
             label = 'Scatter Plot Title vs Description',
             c = 'b')
@@ -447,7 +522,7 @@ plt.scatter(map(abs, df2['article_title_sentiment']),
 #             label = 'Scatter Plot Title vs Description',
 #             c = 'b')
 # Plot the sentiment line of absolute values
-plt.plot(map(abs, df2['article_title_sentiment']), fit, label = 'Linear Regression Fit', c='c')
+plt.plot(df2['article_title_pos'], fit, label = 'Linear Regression Fit', c='c')
 # plt.plot(df2['article_title_sentiment'], fit, label = 'Linear Regression Fit', c='c')
 plt.title('Article Title Sentiment vs Article Description Sentiment'
 #          '\n Elements where Article Title Sentiment = 0 or Article Description Sentiment = 0 Removed'
@@ -465,9 +540,9 @@ plt.ylim([0, 1])
 
 
 # Extract Article Message Sentiment
-article_message_sentiment = df2['message_sentiment']
+article_message_sentiment = df2['article_message_score']
 # Extract Article Title Sentiment
-article_title_sentiment = df2['article_title_sentiment']
+article_title_sentiment = df2['article_title_score']
 # Extract Article Post Id from Article Info Dataframe
 article_post_ids = df2['post_id']
 
@@ -475,10 +550,8 @@ article_post_ids = df2['post_id']
 # If want to extract Article Post Id's from comment Dataframe, use:
 # See issues highlighted in comments
 # uniquepostid = pd.Series(df['post_id'].unique()).values
-
 # Used to figure the id out:
 # rowstodrop =  np.where(~np.logical_or(df['post_id'] == postid[0], df['post_id'] == postid[1])  )[0]
-
 # Group comment sentiment by post_id
 
 # Initialise target array to store comment sentiment for each post id
@@ -490,7 +563,7 @@ for id in article_post_ids:
     # Return the indexes where the values in post_id in df matches the post_id from df2
     indexes = np.where(df['post_id'] == id)[0]
     # Append all those sentiments that match those indexes
-    article_comments_sentiment.append(df['sentiment'].iloc[indexes].values)
+    article_comments_sentiment.append(df['message_score'].iloc[indexes].values)
 
 # Calculate the mean of the sentiment for extracted comment groups
 # Initilise mean sentiment array
@@ -524,18 +597,244 @@ plt.ylim([-1, 1])
 # not just the mean sentiment
 
 # Extract the ids for article sentiment and extract the message sentiment where they are.
-# ToDo
+# ToDo - Add in more here to look at the correlation between article message and facebook message
+# A = []
+# for i in article_comments_sentiment:
+#     A.append(np.zeros(len(i)))
+# Will need to investigate it like this.
+# for i, aa in enumerate(A):
+#     print i, aa
+#     for j, k in enumerate(aa):
+#         print j, k
+#         A[i][j] = article_message_sentiment[i]
+
+##################################
+# < 5c > Hexbin plot and linear regression of the positive and negative sentiments
+# from the comments sentiment vs article title sentiment
+
+
+
+def extractsentiment(dfa, dfc, sat, sct):
+
+    # dfa = dataframe article -> df2
+    # dfc = dataframe facebook comment -> df
+
+    # sat = sentiment article type -> options:
+    #                               / 'article_message_score'
+    #                               / 'article_message_pos'
+    #                               / 'article_message_neg'
+    #                               / 'article_message_neu'
+    # sct = sentiment comment type -> options:
+    #                               / 'message_score'
+    #                               / 'message_pos'
+    #                               / 'message_neg'
+    #                               / 'message_neu'
+
+    article_message_sentiment = df2['article_message_score']
+    # Extract Article Title Sentiment
+    article_title_sentiment = df2['article_title_score']
+    # Extract Article Post Id from Article Info Dataframe
+    article_post_ids = df2['post_id']
+
+    article_comments_sentiment = []
+    # Using the post ids from df2
+    # Iterate over all article ids extracted from article dataframee
+    for id in article_post_ids:
+        # Return the indexes where the values in post_id in df matches the post_id from df2
+        indexes = np.where(df['post_id'] == id)[0]
+        # Append all those sentiments that match those indexes
+        article_comments_sentiment.append(df['message_score'].iloc[indexes].values)
+    ###################################
+    A = []
+    for i in article_comments_sentiment:
+        A.append(np.zeros(len(i)))
+    for i, aa in enumerate(article_comments_sentiment):
+        print 'i: ', i, 'aa: ', aa
+        for j, k in enumerate(aa):
+            print 'j:', j, 'k: ', k
+            A[i][j] = article_message_sentiment.values[i]
+
+    A_flat = list(itertools.chain(*A))
+    B_flat = list(itertools.chain(*article_comments_sentiment))
+
+    # ars = article sentiment
+    # asf = article sentiment flattened
+    # cs = comment sentiment
+    # csf = comment sentiment flattened
+
+
+    return ars, asf, cs, csf
+
+# titlescore, titlescoreflat, articlescore, articlescoreflat = extractsentiment(df2, df, '')
+
+
+article_message_sentiment = df2['article_message_score']
+article_message_pos = df2['article_message_pos']
+article_message_neg = df2['article_message_neg']
+article_message_neu = df2['article_message_neu']
+
+# Extract Article Title Sentiment
+article_title_sentiment = df2['article_title_score']
+# Extract Article Post Id from Article Info Dataframe
+article_post_ids = df2['post_id']
+
+# Article Comment Arrays
+article_comments_sentiment = []
+article_comments_pos = []
+article_comments_neg = []
+article_comments_neu = []
+
+# Using the post ids from df2
+# Iterate over all article ids extracted from article dataframee
+for id in article_post_ids:
+    # Return the indexes where the values in post_id in df matches the post_id from df2
+    indexes = np.where(df['post_id'] == id)[0]
+    # Append all those sentiments that match those indexes
+    article_comments_sentiment.append(df['message_score'].iloc[indexes].values)
+    article_comments_pos.append(df['message_pos'].iloc[indexes].values)
+    article_comments_neg.append(df['message_neg'].iloc[indexes].values)
+    article_comments_neu.append(df['message_neu'].iloc[indexes].values)
+
+###################################
+# Article Message Arrays
 A = []
+score = []
+pos = []
+neg = []
+neu = []
+
 for i in article_comments_sentiment:
     A.append(np.zeros(len(i)))
+    score.append(np.zeros(len(i)))
+    pos.append(np.zeros(len(i)))
+    neg.append(np.zeros(len(i)))
+    neu.append(np.zeros(len(i)))
 
-
-# Will need to investigate it like this.
-for i, aa in enumerate(A):
-    print i, aa
+for i, aa in enumerate(article_comments_sentiment):
+    print 'i: ', i, 'aa: ', aa
     for j, k in enumerate(aa):
-        print j, k
-        A[i][j] = article_message_sentiment[i]
+        print 'j:', j, 'k: ', k
+        A[i][j] = article_message_sentiment.values[i]
+        score[i][j] = article_message_sentiment.values[i]
+        pos[i][j] = article_message_pos.values[i]
+        neg[i][j] = article_message_neg.values[i]
+        neu[i][j] = article_message_neu.values[i]
+
+# Create flat arrays for hexbin plot
+# Article flat
+score_flat = list(itertools.chain(*score))
+pos_flat = list(itertools.chain(*pos))
+neg_flat = list(itertools.chain(*neu))
+neu_flat = list(itertools.chain(*neg))
+# Comment flat
+
+
+B_flat = list(itertools.chain(*article_comments_sentiment))
+article_comments_sentiment_flat = list(itertools.chain(*article_comments_sentiment))
+article_comments_pos_flat = list(itertools.chain(*article_comments_pos))
+article_comments_neg_flat = list(itertools.chain(*article_comments_neg))
+article_comments_neu_flat = list(itertools.chain(*article_comments_neu))
+
+# Subplot of all histograms / scatter / hexbin plots Same layout as before using the subplot notation
+
+# plt.scatter(A_flat, B_flat)
+plt.hexbin(score_flat, article_comments_sentiment_flat, gridsize=100, bins='log')
+plt.hexbin(pos_flat, article_comments_pos_flat, gridsize=100, bins='log')
+plt.hexbin(neg_flat, article_comments_neg_flat, gridsize=100, bins='log')
+plt.hexbin(neu_flat, article_comments_neu_flat, gridsize=100, bins='log')
+plt.xlim([0,1])
+cb = fig.colorbar(hb, ax=ax)
+######################################
+
+
+# Plotting all the comment sentiments for sentiment for each article title
+
+fig, ((ax1, ax2),(ax3, ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(7, 4))
+# ax1.add_subplot(1,1,1)
+a1 = ax1.hexbin(score_flat, article_comments_sentiment_flat, gridsize=100, bins='log')
+ax1.set_xlabel('Article Title Sentiment Score')
+ax1.set_ylabel('Facebook Comment Score')
+ax1.set_title('Article Title Sentiment vs Facebook Comment Sentiment Score')
+ax1.set_xlim([-1,1])
+ax1.set_ylim([-1,1])
+cb1 = fig.colorbar(a1, ax=ax1)
+cb1.set_label('log10(Counts)', fontsize = 15)
+
+a2 = ax2.hexbin(pos_flat, article_comments_pos_flat, gridsize=100, bins='log')
+ax2.set_xlabel('Article Title Sentiment Score')
+ax2.set_ylabel('Facebook Comment Score')
+ax2.set_title('Article Title Sentiment vs Facebook Comment Sentiment Positive')
+ax2.set_xlim([-1,1])
+ax2.set_ylim([-1,1])
+cb2 = fig.colorbar(a1, ax=ax2)
+cb2.set_label('log10(Counts)', fontsize = 15)
+
+a3 = ax3.hexbin(neg_flat, article_comments_neg_flat, gridsize=100, bins='log')
+ax3.set_xlabel('Article Title Sentiment Score')
+ax3.set_ylabel('Facebook Comment Score')
+ax3.set_title('Article Title Sentiment vs Facebook Comment Sentiment Negative')
+ax3.set_xlim([-1,1])
+ax3.set_ylim([-1,1])
+cb3 = fig.colorbar(a1, ax=ax3)
+cb3.set_label('log10(Counts)', fontsize = 15)
+
+a4 = ax4.hexbin(neu_flat, article_comments_neu_flat, gridsize=100, bins='log')
+ax4.set_xlabel('Article Title Sentiment Score')
+ax4.set_ylabel('Facebook Comment Score')
+ax4.set_title('Article Title Sentiment vs Facebook Comment Sentiment Neutral')
+ax4.set_xlim([-1,1])
+ax4.set_ylim([-1,1])
+cb4 = fig.colorbar(a1, ax=ax4)
+cb4.set_label('log10(Counts)', fontsize = 15)
+# cb = fig.colorbar(hb, ax=ax)
+# cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+# fig.colorbar(im, cax=cbar_ax)
+# cb.set_label('log10(Counts)', fontsize = 15)
+
+
+### Further Histogram to highlight the differences in pos neg and neu which should all be on the same axis
+fig, (ax2, ax3, ax4) = plt.subplots(nrows=1, ncols=3, figsize=(7, 4))
+a2 = ax2.hexbin(pos_flat, article_comments_pos_flat, gridsize=100, bins='log')
+ax2.set_xlabel('Article Title Sentiment Score')
+ax2.set_ylabel('Facebook Comment Score')
+ax2.set_title('Article Title Sentiment vs Facebook Comment Sentiment Positive')
+ax2.set_xlim([0,1])
+ax2.set_ylim([0,1])
+cb2 = fig.colorbar(a1, ax=ax2)
+cb2.set_label('log10(Counts)', fontsize = 15)
+
+a3 = ax3.hexbin(neg_flat, article_comments_neg_flat, gridsize=100, bins='log')
+ax3.set_xlabel('Article Title Sentiment Score')
+ax3.set_ylabel('Facebook Comment Score')
+ax3.set_title('Article Title Sentiment vs Facebook Comment Sentiment Negative')
+ax3.set_xlim([0,1])
+ax3.set_ylim([0,1])
+cb3 = fig.colorbar(a1, ax=ax3)
+cb3.set_label('log10(Counts)', fontsize = 15)
+
+a4 = ax4.hexbin(neu_flat, article_comments_neu_flat, gridsize=100, bins='log')
+ax4.set_xlabel('Article Title Sentiment Score')
+ax4.set_ylabel('Facebook Comment Score')
+ax4.set_title('Article Title Sentiment vs Facebook Comment Sentiment Neutral')
+ax4.set_xlim([0,1])
+ax4.set_ylim([0,1])
+cb4 = fig.colorbar(a1, ax=ax4)
+cb4.set_label('log10(Counts)', fontsize = 15)
+
+
+for i, j in zip(A, article_comments_sentiment):
+    plt.plot(i,j)
+
+# So the line plot works ok, but a hexbin plot would allow further information on what the density
+# of certain parts of the graph are.
+
+A_flat = list(itertools.chain(*A))
+B_flat = list(itertools.chain(*article_comments_sentiment))
+
+plt.scatter(A_flat,B_flat)
+plt.hexbin(A_flat,B_flat, gridsize=100, bins='log')
+plt.hexbin(A_flat,B_flat, gridsize=100, bins='log')
+cb = fig.colorbar(hb, ax=ax)
 
 
 #new_array = []
