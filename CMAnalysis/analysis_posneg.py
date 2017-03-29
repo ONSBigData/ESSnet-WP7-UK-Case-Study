@@ -37,12 +37,30 @@ df['word_count'] = df['message'].apply(lambda x: len(tokenize.word_tokenize(x)))
 # df['sentiment'] = df['sentiment'].fillna(0)
 
 
+# < Pre - Processing >
+
+# Drop all rows from the parent comments and child comments that have a sentiment of 0 -
+df = df[(df.message_score != 0) & (df.message_pos != 0) & (df.message_neg != 0) & (df.message_neu != 1)]
+# Drop all rows where there are any NaN values in any of the sentiment scores
+df = df[
+    (~np.isnan(df.message_score)) |
+    (~np.isnan(df.message_pos)) |
+    (~np.isnan(df.message_neg)) |
+    (~np.isnan(df.message_neu))
+        ]
+
+# df = df[df.message_pos != 0]
+# df = df[df.message_neg != 0]
+# df = df[df.message_neu != 1]
+
+# DO not drop from the article array - as this
+
+
 # < 1 > Compare Facebook Comment Length to Sentiment
-
-
 # Hexagonal Hexbin Plot of Word Count vs FB Comment Sentiment
 # Linear Color Bar
 # Comment Score
+
 
 x = []
 y = []
@@ -675,6 +693,10 @@ article_message_neu = df2['article_message_neu']
 
 # Extract Article Title Sentiment
 article_title_sentiment = df2['article_title_score']
+article_title_pos = df2['article_title_pos']
+article_title_neg = df2['article_title_neg']
+article_title_neu = df2['article_title_neu']
+
 # Extract Article Post Id from Article Info Dataframe
 article_post_ids = df2['post_id']
 
@@ -695,13 +717,20 @@ for id in article_post_ids:
     article_comments_neg.append(df['message_neg'].iloc[indexes].values)
     article_comments_neu.append(df['message_neu'].iloc[indexes].values)
 
-###################################
+
 # Article Message Arrays
 A = []
 score = []
 pos = []
 neg = []
 neu = []
+
+# Article Title Arrays
+title_score = []
+title_pos = []
+title_neg = []
+title_neu = []
+
 
 for i in article_comments_sentiment:
     A.append(np.zeros(len(i)))
@@ -710,25 +739,44 @@ for i in article_comments_sentiment:
     neg.append(np.zeros(len(i)))
     neu.append(np.zeros(len(i)))
 
+    title_score.append(np.zeros(len(i)))
+    title_pos.append(np.zeros(len(i)))
+    title_neg.append(np.zeros(len(i)))
+    title_neu.append(np.zeros(len(i)))
+
 for i, aa in enumerate(article_comments_sentiment):
     print 'i: ', i, 'aa: ', aa
     for j, k in enumerate(aa):
         print 'j:', j, 'k: ', k
         A[i][j] = article_message_sentiment.values[i]
+
+        # Article Message Sentiment
         score[i][j] = article_message_sentiment.values[i]
         pos[i][j] = article_message_pos.values[i]
         neg[i][j] = article_message_neg.values[i]
         neu[i][j] = article_message_neu.values[i]
 
+        # Article Title Sentiment
+        title_score[i][j] = article_title_sentiment.values[i]
+        title_pos[i][j] = article_title_pos.values[i]
+        title_neg[i][j] = article_title_neg.values[i]
+        title_neu[i][j] = article_title_neu.values[i]
+
 # Create flat arrays for hexbin plot
-# Article flat
-score_flat = list(itertools.chain(*score))
-pos_flat = list(itertools.chain(*pos))
-neg_flat = list(itertools.chain(*neu))
-neu_flat = list(itertools.chain(*neg))
+
+# Article Message flat
+# score_flat = list(itertools.chain(*score))
+# pos_flat = list(itertools.chain(*pos))
+# neg_flat = list(itertools.chain(*neu))
+#neu_flat = list(itertools.chain(*neg))
+
+# Article Title flat
+score_flat = list(itertools.chain(*title_score))
+pos_flat = list(itertools.chain(*title_pos))
+neg_flat = list(itertools.chain(*title_neu))
+neu_flat = list(itertools.chain(*title_neg))
+
 # Comment flat
-
-
 B_flat = list(itertools.chain(*article_comments_sentiment))
 article_comments_sentiment_flat = list(itertools.chain(*article_comments_sentiment))
 article_comments_pos_flat = list(itertools.chain(*article_comments_pos))
@@ -836,68 +884,101 @@ plt.hexbin(A_flat,B_flat, gridsize=100, bins='log')
 plt.hexbin(A_flat,B_flat, gridsize=100, bins='log')
 cb = fig.colorbar(hb, ax=ax)
 
+# Correlation between the article title sentiment and the facebook comment sentiment
+# Can track how this changes by the global data changes made at the top of the file
 
-#new_array = []
-#for i,j in enumerate(article_comments_sentiment):
-#    new_array.append( [article_message_sentiment[i] for k in ]
+# Linear Regression for Positive Sentiment Scores
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
+gradient, intercept, r_value, p_value, std_err = stats.linregress(
+                                                        pos_flat,
+                                                        article_comments_pos_flat,
+                                                        )
+print('Linear regression using stats.linregress')
+# Create the linear regression line
+fit = np.array(pos_flat) * gradient + intercept
+# Scatter Plot of Absoluute Snetiment Values
+plt.scatter(pos_flat,article_comments_pos_flat,
+            s = 5,
+            label = 'Scatter Plot Title Sentiment vs Comment Sentiment',
+            c = 'b')
+# plt.scatter(df2['article_title_sentiment'],
+#             df2['message_sentiment'],
+#             s = 5,
+#             label = 'Scatter Plot Title vs Description',
+#             c = 'b')
+# Plot the sentiment line of absolute values
+plt.plot(pos_flat, fit, label = 'Linear Regression Fit', c='c')
+# plt.plot(df2['article_title_sentiment'], fit, label = 'Linear Regression Fit', c='c')
+plt.title('Article Title Sentiment vs Comment Sentiment (Positive Sentiment)'
+#          '\n Elements where Article Title Sentiment = 0 or Article Description Sentiment = 0 Removed'
+          '\nR 2 = {} gradient = {}'.format(round(r_value ** 2, 4), round(gradient ** 2, 4)))
+# plt.title('Article Title Sentiment vs Article Description Sentiment')
+plt.legend()
+plt.xlabel('Article Title Sentiment')
+plt.ylabel('Article Comments Sentiment')
+plt.xlim([0, 1])
+plt.ylim([0, 1])
 
+# Linear Regression for Negative Sentiment Scores
+# Create the linear regression line
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
+gradient, intercept, r_value, p_value, std_err = stats.linregress(
+                                                        neg_flat,
+                                                        article_comments_neg_flat,
+                                                        )
+fit = np.array(neg_flat) * gradient + intercept
+# Scatter Plot of Absoluute Snetiment Values
+plt.scatter(neg_flat,article_comments_neg_flat,
+            s = 5,
+            label = 'Scatter Plot Title Sentiment vs Comment Sentiment',
+            c = 'b')
+# plt.scatter(df2['article_title_sentiment'],
+#             df2['message_sentiment'],
+#             s = 5,
+#             label = 'Scatter Plot Title vs Description',
+#             c = 'b')
+# Plot the sentiment line of absolute values
+plt.plot(neg_flat, fit, label = 'Linear Regression Fit', c='c')
+# plt.plot(df2['article_title_sentiment'], fit, label = 'Linear Regression Fit', c='c')
+plt.title('Article Title Sentiment vs Comment Sentiment (Negative Sentiment)'
+#          '\n Elements where Article Title Sentiment = 0 or Article Description Sentiment = 0 Removed'
+          '\nR 2 = {} gradient = {}'.format(round(r_value ** 2, 4), round(gradient ** 2, 4)))
+# plt.title('Article Title Sentiment vs Article Description Sentiment')
+plt.legend()
+plt.xlabel('Article Title Sentiment')
+plt.ylabel('Article Comments Sentiment')
+plt.xlim([0, 1])
+plt.ylim([0, 1])
 
-
-# Square 2d Histogram Plot
-# Linear
-# x = []
-# y = []
-# for i, v in zip(df['word count'].values, df['sentiment'].values):
-#     if i <= 100 and i > 0 and ~math.isnan(i) and ~math.isnan(v):
-#         x.append(i)
-#         y.append(v)
-# # plt.hist2d(x,y, bins=15)
-#
-# x = np.array(x)
-# y = np.array(y)
-# fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
-# hb = ax.hist2d(x,y, bins = 15)
-# ax.axis([0, 100, -1, 1])
-# ax.set_title('Hexagonal Bin Plot of Comment Sentiment vs Comment Word Count'
-#              '\nfor Facebook Comments in response to Guardian News Articles'
-#              '\nMax Word Count constrained to 100', fontsize = 18)
-# ax.set_xlabel('Comment Word Count', fontsize = 12)
-# ax.set_ylabel('Comment Sentiment (Normalised by Sentence Count)', fontsize = 12)
-# # cb = fig.colorbar(hb, ax=ax)
-# # cb.set_label('Counts', fontsize = 15)
-# plt.tight_layout()
-
-
-
-
-
-
-
-
-
-
-
-
-
-# plt.hist2d(df['word count'], df['sentiment'], bins = 100)
-# plt.xlim([0, 100])
-# plt.show()
-#
-# plt.scatter(df['word count'], df['sentiment'], s=1)
-# plt.hexbin(df['word count'], df['sentiment'], gridsize = 15)
-# plt.xlim([0, 100])
-# plt.show()
-#
-# plt.clf()
-#
-# x = []
-# y = []
-# for i,v in zip(df['word count'].values,df['sentiment'].values):
-#     if i < 100:
-#         x.append(i)
-#         y.append(v)
-# plt.hexbin(x, y)
-# plt.xlim([0, 100])
-# plt.clf()
+# Linear Regression for Neutral Sentiment Scores
+# Create the linear regression line
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
+gradient, intercept, r_value, p_value, std_err = stats.linregress(
+                                                        neu_flat,
+                                                        article_comments_neu_flat,
+                                                        )
+fit = np.array(neu_flat) * gradient + intercept
+# Scatter Plot of Absoluute Snetiment Values
+plt.scatter(neu_flat,article_comments_neu_flat,
+            s = 5,
+            label = 'Scatter Plot Title Sentiment vs Comment Sentiment',
+            c = 'b')
+# plt.scatter(df2['article_title_sentiment'],
+#             df2['message_sentiment'],
+#             s = 5,
+#             label = 'Scatter Plot Title vs Description',
+#             c = 'b')
+# Plot the sentiment line of absolute values
+plt.plot(neu_flat, fit, label = 'Linear Regression Fit', c='c')
+# plt.plot(df2['article_title_sentiment'], fit, label = 'Linear Regression Fit', c='c')
+plt.title('Article Title Sentiment vs Comment Sentiment (Neutral Sentiment)'
+#          '\n Elements where Article Title Sentiment = 0 or Article Description Sentiment = 0 Removed'
+          '\nR 2 = {} gradient = {}'.format(round(r_value ** 2, 4), round(gradient ** 2, 4)))
+# plt.title('Article Title Sentiment vs Article Description Sentiment')
+plt.legend()
+plt.xlabel('Article Title Sentiment')
+plt.ylabel('Article Comments Sentiment')
+plt.xlim([0, 1])
+plt.ylim([0, 1])
 
 
