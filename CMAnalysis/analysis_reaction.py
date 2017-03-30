@@ -98,89 +98,157 @@ for reaction in df2.columns[21:]:
     # Message Sentiment
     plt.suptitle('Article Message Sentiment vs {} Frequency'.format(reaction))
 
+# < 7 >
+# Comparison of Article Reactions and Sentiment of Facebook Comments
 
+## before you do all this, drop nans from all the rows in df.
+print len(df)
+df.dropna(subset = ['message_score', 'message_pos', 'message_neg','message_neu'], inplace = True)
+print len(df)
 
+# Drop all rows from the parent comments and child comments that have a sentiment of 0 -
+df = df[(df.message_score != 0) & (df.message_pos != 0) & (df.message_neg != 0) & (df.message_neu != 1)]
+print len(df)
 
-
-df2.reactions[0:1].values[0]
-reactions = ast.literal_eval(df2.reactions[0:1].values[0])
-type(ast.literal_eval(df2.reactions[0:1].values[0]))
-
-df2.reactions = df2.reactions.apply(lambda x: ast.literal_eval(x))
-reactions = df2.reactions.values
-
-# Filter df by the ids that are in df2
-# Actually don't have to filter, because the reactions and article sentiments are contained in the same dataframe
-
-# comparing df2.reactions, df2.article_title_score
-
-
-
-# keys -> angry / haha / like / love / sad / thankful / total_count / wow
-# 1 option -> convert unordered dict to ordered dict then plot
-# 2 option -> do a load of ifs
-fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
-love = []
-like = []
-total_count = []
-angry = []
-haha = []
-sad = []
-thankful = []
-wow = []
-
-A=[]
-
-def f():
-    # Step 1
-    #       Convert unordered dictionary to ordered dictionary
-    # Step 2
-    #       Iterate over ordered dictionary to
-    # Or just post to stackoverflow
-
-    return love, like, total_count, angry, haha, sad, thankful, wow
-
-df['message_score'], df['message_pos'], df['message_neg'], df['message_neu'] = zip(*df['message'].map(f))
-
-
-
-for reaction in reactions:
-    A.append(reaction.items())
-    for key, values in reaction.iteritems():
-
-
-
-for reaction, title_score in zip(reactions, article_title_score):
-    for key, value in reaction.iteritems():
-        if key == 'love':
-            plt.scatter(title_score, value, label=key, c = 'b')
-        if key == 'like':
-            plt.scatter(title_score, value, label=key, c='c')
-        if key == 'total_count':
-            plt.scatter(title_score, value, label=key, c='y')
-        if key == 'angry':
-            plt.scatter(title_score, value, label=key, c='g')
-        if key == 'haha':
-            plt.scatter(title_score, value, label=key, c='k')
-        if key == 'sad':
-            plt.scatter(title_score, value, label=key, c='r')
-        if key == 'wow':
-            plt.scatter(title_score, value, label=key, c='w')
-        # if key == 'thankful':
-        #     plt.scatter(title_score, value, label=key, c='m')
-plt.legend(labels = [i for i in reaction.keys() if i != 'thankful'])
+# ids = df2.post_id.values.tolist()
+#
+#
+# article_post_ids = df2['post_id']
+#
+# article_comments_sentiment = []
+# article_comments_pos = []
+# article_comments_neg = []
+# article_comments_neu = []
+#
+# for id in article_post_ids:
+#     indexes = np.where(df2['post_id'] == id)[0]
+#
+#     article_comments_sentiment.append(df2['message_score'].iloc[indexes].values)
+#     article_comments_pos.append(df2['message_pos'].iloc[indexes].values)
+#     article_comments_neg.append(df2['message_neg'].iloc[indexes].values)
+#     article_comments_neu.append(df2['message_neu'].iloc[indexes].values)
 
 #
 
+indexes = []
+
+article_comments_sentiment = []
+article_comments_pos = []
+article_comments_neg = []
+article_comments_neu = []
+
+for index in df2['post_id']:
+    i = np.where(df['post_id'] == index)[0]
+    indexes.append(np.where(df['post_id'] == index)[0])
+    article_comments_sentiment.append(df['message_score'].iloc[i].values)
+    article_comments_pos.append(df['message_pos'].iloc[i].values)
+    article_comments_neg.append(df['message_neg'].iloc[i].values)
+    article_comments_neu.append(df['message_neu'].iloc[i].values)
 
 
 
+# Scratch that - can't flatten, as need to know position within the list
+# Arrays to compare: df2['like'] and df['message_score']
 
 
 
+# Reaction Arryas
+angry = []
+haha = []
+like = []
+love = []
+sad = []
+thankful = []
+total_count = []
+wow = []
 
-#new_array = []
-#for i,j in enumerate(article_comments_sentiment):
-#    new_array.append( [article_message_sentiment[i] for k in ]
+for i in indexes:
+    angry.append(np.zeros(len(i)))
+    haha.append(np.zeros(len(i)))
+    like.append(np.zeros(len(i)))
+    love.append(np.zeros(len(i)))
+    sad.append(np.zeros(len(i)))
+    thankful.append(np.zeros(len(i)))
+    total_count.append(np.zeros(len(i)))
+    wow.append(np.zeros(len(i)))
 
-# Reactions contained in the df2 array ->
+for i, aa in enumerate(indexes):
+    print 'i: ', i, 'aa: ', aa
+    for j, k in enumerate(aa):
+        print 'j:', j, 'k: ', k
+        angry[i][j] = df2.angry.values[i]
+        haha[i][j] = df2.haha.values[i]
+        like[i][j] = df2.like.values[i]
+        love[i][j] = df2.love.values[i]
+        sad[i][j] = df2.sad.values[i]
+        thankful[i][j] = df2.thankful.values[i]
+        total_count[i][j] = df2.total_count.values[i]
+        wow[i][j] = df2.wow.values[i]
+
+
+# Now, as everything is all lined up
+# you can flatten the lists and then plot them
+
+# Flattened arrays for hexbin plot
+angry = list(itertools.chain(*angry))
+haha = list(itertools.chain(*haha))
+like = list(itertools.chain(*like))
+love = list(itertools.chain(*love))
+sad = list(itertools.chain(*sad))
+thankful = list(itertools.chain(*thankful))
+total_count = list(itertools.chain(*total_count))
+wow = list(itertools.chain(*wow))
+
+article_comments_sentiment = list(itertools.chain(*article_comments_sentiment))
+article_comments_pos = list(itertools.chain(*article_comments_pos))
+article_comments_neg = list(itertools.chain(*article_comments_neg))
+article_comments_neu = list(itertools.chain(*article_comments_neu))
+
+# For Plotting
+def hexplot(x,y, xtitle, ytitle, title):
+    fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(7, 4))
+    # plt.hexbin(total_count,article_comments_pos, gridsize=100, bins='log')
+    a1 = axes.hexbin(x, y, gridsize=40, bins = 'log')
+    cb2 = fig.colorbar(a1, ax=axes)
+    cb2.set_label('log10(Counts)', fontsize=15)
+    axes.set_xlabel('{}'.format(xtitle))
+    axes.set_ylabel('{}'.format(ytitle))
+    axes.set_title('{}'.format(title))
+    axes.set_xlim([0, 1])
+    axes.set_ylim([0, max(y)])
+    plt.show()
+    return 1
+
+hexplot(article_comments_pos,
+        like,
+        'Comment Sentiment (Positive)',
+        'Reaction Frequency - Total Count',
+        'Hexbin Plot Positive Sentiment vs total_count frequency'
+        '\nShading indicates frequency')
+
+# Can remove all instances where all comment sentiments are 0
+# i.e. a question what influences when someone posts a comment that does not have 0 sentiment attached to it
+#
+
+
+# fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(7, 4))
+# plt.hexbin(total_count,article_comments_pos, gridsize=100, bins='log')
+# plt.hexbin(article_comments_pos, total_count, gridsize=13, bins='log')
+
+# Scatter Plots
+# for i, v in zip(angry, article_comments_pos):
+#     print i,v
+#     # plt.scatter(i,v)
+#     plt.scatter(v, i)
+
+# Get the article id from df2 for all articles
+# Return a list of indices of comments for a particular article Id
+# Return a list of comment sentiment for those indices
+# Compare the comment sentiments to the sentiments of the articles
+
+
+# df2.reactions[0:1].values[0]
+# reactions = ast.literal_eval(df2.reactions[0:1].values[0])
+# type(ast.literal_eval(df2.reactions[0:1].values[0]))
+# df2.reactions = df2.reactions.apply(lambda x: ast.literal_eval(x))
+# reactions = df2.reactions.values
