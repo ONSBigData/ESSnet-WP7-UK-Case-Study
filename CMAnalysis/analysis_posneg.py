@@ -1,11 +1,8 @@
 import pandas as pd
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk import tokenize
 from matplotlib import pyplot as plt
 import numpy as np
 import math
-from sklearn.linear_model import LinearRegression
-from sklearn import linear_model
 from scipy import stats
 import itertools
 
@@ -13,13 +10,9 @@ import itertools
 # Here we look at analysing not just the overall score but
 # the pos, neg, and neu values that went into that score
 # This is in an attempt to get more information out of the text
-
 # We are using the new test data files which contain the score, pos, neg, neu for each
 
-
-
 # Section 1: Focusses on Analysis of Facebook Comments
-
 # Import Comments and Associated Sentiment Calculation
 df = pd.read_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-comments-t-sentiment-test.csv', encoding='utf-8', index_col=0)
 # Convert empty na cells to Unicode empty strings -
@@ -36,7 +29,6 @@ df['word_count'] = df['message'].apply(lambda x: len(tokenize.word_tokenize(x)))
 # We could remove all NaN elemnts, but instead just iggnore when plotting
 # df['sentiment'] = df['sentiment'].fillna(0)
 
-
 # < Pre - Processing >
 
 # Drop all rows from the parent comments and child comments that have a sentiment of 0 -
@@ -46,8 +38,7 @@ df = df[
     (~np.isnan(df.message_score)) |
     (~np.isnan(df.message_pos)) |
     (~np.isnan(df.message_neg)) |
-    (~np.isnan(df.message_neu))
-        ]
+    (~np.isnan(df.message_neu))]
 
 # df = df[df.message_pos != 0]
 # df = df[df.message_neg != 0]
@@ -55,12 +46,10 @@ df = df[
 
 # DO not drop from the article array - as this
 
-
 # < 1 > Compare Facebook Comment Length to Sentiment
 # Hexagonal Hexbin Plot of Word Count vs FB Comment Sentiment
 # Linear Color Bar
 # Comment Score
-
 
 x = []
 y = []
@@ -73,7 +62,11 @@ for i, v in zip(df['word_count'].values, df['message_score'].values):
 x = np.array(x)
 y = np.array(y)
 fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
-hb = ax.hexbin(x, y, gridsize=19)
+x_min = 0
+x_max = 100
+y_min = -1
+y_max = 1
+hb = ax.hexbin(x, y, gridsize=19, extent=[x_min, x_max, y_min, y_max])
 line = ax.plot([0, 0], [0, 0], c='w')
 ax.axis([0, 100, -1, 1])
 ax.set_title('Hexagonal Bin Plot'
@@ -99,7 +92,11 @@ for i, v in zip(df['word_count'].values, df['message_score'].values):
 x = np.array(x)
 y = np.array(y)
 fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
-hb = ax.hexbin(x, y, gridsize=50, bins='log')
+x_min = 0
+x_max = 100
+y_min = -1
+y_max = 1
+hb = ax.hexbin(x, y, gridsize=50, bins='log', extent=[x_min, x_max, y_min, y_max])
 line = ax.plot([0, 0], [0, 0], c='w')
 ax.axis([0, 100, -1, 1])
 ax.set_title('Hexagonal Bin Plot'
@@ -125,7 +122,11 @@ for i, v in zip(df['word_count'].values, df['message_pos'].values):
 x = np.array(x)
 y = np.array(y)
 fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
-hb = ax.hexbin(x, y, gridsize=19)
+x_min = 0
+x_max = 100
+y_min = 0
+y_max = 1
+hb = ax.hexbin(x, y, gridsize=19, extent=[x_min, x_max, y_min, y_max])
 line = ax.plot([0, 0], [0, 0], c='w')
 ax.axis([0, 100, 0, 1])
 ax.set_title('Hexagonal Bin Plot'
@@ -150,8 +151,12 @@ for i, v in zip(df['word_count'].values, df['message_pos'].values):
         y.append(v)
 x = np.array(x)
 y = np.array(y)
+x_min = 0
+x_max = 100
+y_min = 0
+y_max = 1
 fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
-hb = ax.hexbin(x, y, gridsize=50, bins='log')
+hb = ax.hexbin(x, y, gridsize=50, bins='log', extent=[x_min, x_max, y_min, y_max])
 line = ax.plot([0, 0], [0, 0], c='w')
 ax.axis([0, 100, 0, 1])
 ax.set_title('Hexagonal Bin Plot'
@@ -176,8 +181,12 @@ for i, v in zip(df['word_count'].values, df['message_neg'].values):
         y.append(v)
 x = np.array(x)
 y = np.array(y)
+x_min = 0
+x_max = 100
+y_min = 0
+y_max = 1
 fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
-hb = ax.hexbin(x, y, gridsize=19)
+hb = ax.hexbin(x, y, gridsize=19, extent=[x_min, x_max, y_min, y_max])
 line = ax.plot([0, 0], [0, 0], c='w')
 ax.axis([0, 100, 0, 1])
 ax.set_title('Hexagonal Bin Plot'
@@ -202,7 +211,11 @@ for i, v in zip(df['word_count'].values, df['message_neg'].values):
 x = np.array(x)
 y = np.array(y)
 fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
-hb = ax.hexbin(x, y, gridsize=50, bins='log')
+x_min = 0
+x_max = 100
+y_min = 0
+y_max = 1
+hb = ax.hexbin(x, y, gridsize=50, bins='log', extent=[x_min, x_max, y_min, y_max])
 line = ax.plot([0, 0], [0, 0], c='w')
 ax.axis([0, 100, 0, 1])
 ax.set_title('Hexagonal Bin Plot'
@@ -228,7 +241,11 @@ for i, v in zip(df['word_count'].values, df['message_neu'].values):
 x = np.array(x)
 y = np.array(y)
 fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
-hb = ax.hexbin(x, y, gridsize=19)
+x_min = 0
+x_max = 100
+y_min = 0
+y_max = 1
+hb = ax.hexbin(x, y, gridsize=19, extent=[x_min, x_max, y_min, y_max])
 line = ax.plot([0, 0], [0, 0], c='w')
 ax.axis([0, 100, 0, 1])
 ax.set_title('Hexagonal Bin Plot'
@@ -253,8 +270,12 @@ for i, v in zip(df['word_count'].values, df['message_neu'].values):
         y.append(v)
 x = np.array(x)
 y = np.array(y)
+x_min = 0
+x_max = 100
+y_min = 0
+y_max = 1
 fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
-hb = ax.hexbin(x, y, gridsize=50, bins='log')
+hb = ax.hexbin(x, y, gridsize=50, bins='log', extent=[x_min, x_max, y_min, y_max])
 line = ax.plot([0, 0], [0, 0], c='w')
 ax.axis([0, 100, 0, 1])
 ax.set_title('Hexagonal Bin Plot'
@@ -273,7 +294,6 @@ cb.set_label('log10(Counts)', fontsize = 15)
 fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 # A = df[df['comment_count'] !=0 ].comment_count.values
 A = df[df['comment_count'] > 9].comment_count.values
-
 # A = A[A != 1]
 me = np.mean(A)
 med = np.median(A)
@@ -336,7 +356,12 @@ plt.suptitle('Frequency Plots for Parent Comment Sentiment Scores')
 
 
 # PLot a hexbin of parent comment word length vs parent comment sentiment
-plt.hexbin(parentwordlength, parent_message_score, gridsize = 50, bins = 'log')
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
+x_min = 0
+x_max = 1000
+y_min = -1
+y_max = 1
+plt.hexbin(parentwordlength, parent_message_score, gridsize = 50, bins = 'log', extent=[x_min, x_max, y_min, y_max])
 plt.scatter(parentwordlength, parent_message_score, s = 1)
 
 # < 3 > Compare sentiment of parent comments with sentiment of child comments
@@ -406,6 +431,7 @@ for i, index in enumerate(parentindex):
         child_sentiments_neu.append(df['message_neu'][parentindex[i] + 1:parentindex[i + 1]])
 
 # Plot of all child sentiments for each post (chronological)
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 for i in child_sentiments:
     plt.plot(i)
 plt.title('Plot of All Child Sentiments, Chronological, and Grouped by Parent Comment')
@@ -439,6 +465,7 @@ for i, j, k, v in zip(child_sentiments, child_sentiments_pos, child_sentiments_n
     child_sentiments_neu_mean.append(np.mean(v))
 
 # Plot the mean values for each post, scatter included
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 plt.plot(child_sentiments_mean)
 plt.plot(child_sentiments_pos_mean)
 plt.plot(child_sentiments_neg_mean)
@@ -478,6 +505,7 @@ ps = np.array(y)
 gradient, intercept, r_value, p_value, std_err = stats.linregress(ps, csm)
 print('Linear regression using stats.linregress')
 fit = ps * gradient + intercept
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 plt.scatter(ps, csm, s = 1, label = 'Scatter Plot Parent vs Child', c = 'b')
 plt.plot(ps, fit, label = 'Linear Regression Fit', c='c')
 plt.title('Absolute Parent Sentiment vs Absolute Child Sentiment Mean (Grouped) - Linear Regression Fit\n'
@@ -529,6 +557,7 @@ print('Linear regression using stats.linregress')
 # Create the linear regression line
 fit = np.array(df2['article_title_pos']) * gradient + intercept
 # Scatter Plot of Absoluute Snetiment Values
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 plt.scatter(df2['article_title_pos'],
             df2['article_message_pos'],
             s = 5,
@@ -590,6 +619,7 @@ for sentiments in article_comments_sentiment:
     article_comments_sentiment_means.append( np.mean(sentiments) )
 
 # Non Absolute Plot
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 plt.scatter(article_message_sentiment, article_comments_sentiment_means, label = 'Scatter Plot')
 # Absolute Plot (Using the map(abs, XX) functionality discussed:
 # plt.scatter(map(abs, article_message_sentiment),
@@ -786,6 +816,7 @@ article_comments_neu_flat = list(itertools.chain(*article_comments_neu))
 # Subplot of all histograms / scatter / hexbin plots Same layout as before using the subplot notation
 
 # plt.scatter(A_flat, B_flat)
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 plt.hexbin(score_flat, article_comments_sentiment_flat, gridsize=100, bins='log')
 plt.hexbin(pos_flat, article_comments_pos_flat, gridsize=100, bins='log')
 plt.hexbin(neg_flat, article_comments_neg_flat, gridsize=100, bins='log')
@@ -796,10 +827,13 @@ cb = fig.colorbar(hb, ax=ax)
 
 
 # Plotting all the comment sentiments for sentiment for each article title
-
+x_min = -1
+x_max = 1
+y_min = -1
+y_max = 1
 fig, ((ax1, ax2),(ax3, ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(7, 4))
 # ax1.add_subplot(1,1,1)
-a1 = ax1.hexbin(score_flat, article_comments_sentiment_flat, gridsize=100, bins='log')
+a1 = ax1.hexbin(score_flat, article_comments_sentiment_flat, gridsize=100, bins='log', extent=[x_min, x_max, y_min, y_max])
 ax1.set_xlabel('Article Title Sentiment Score')
 ax1.set_ylabel('Facebook Comment Score')
 ax1.set_title('Article Title Sentiment vs Facebook Comment Sentiment Score')
@@ -808,7 +842,11 @@ ax1.set_ylim([-1,1])
 cb1 = fig.colorbar(a1, ax=ax1)
 cb1.set_label('log10(Counts)', fontsize = 15)
 
-a2 = ax2.hexbin(pos_flat, article_comments_pos_flat, gridsize=100, bins='log')
+x_min = -1
+x_max = 1
+y_min = -1
+y_max = 1
+a2 = ax2.hexbin(pos_flat, article_comments_pos_flat, gridsize=100, bins='log', extent=[x_min, x_max, y_min, y_max])
 ax2.set_xlabel('Article Title Sentiment Score')
 ax2.set_ylabel('Facebook Comment Score')
 ax2.set_title('Article Title Sentiment vs Facebook Comment Sentiment Positive')
@@ -817,7 +855,7 @@ ax2.set_ylim([-1,1])
 cb2 = fig.colorbar(a2, ax=ax2)
 cb2.set_label('log10(Counts)', fontsize = 15)
 
-a3 = ax3.hexbin(neg_flat, article_comments_neg_flat, gridsize=100, bins='log')
+a3 = ax3.hexbin(neg_flat, article_comments_neg_flat, gridsize=100, bins='log', extent=[x_min, x_max, y_min, y_max])
 ax3.set_xlabel('Article Title Sentiment Score')
 ax3.set_ylabel('Facebook Comment Score')
 ax3.set_title('Article Title Sentiment vs Facebook Comment Sentiment Negative')
@@ -826,7 +864,7 @@ ax3.set_ylim([-1,1])
 cb3 = fig.colorbar(a3, ax=ax3)
 cb3.set_label('log10(Counts)', fontsize = 15)
 
-a4 = ax4.hexbin(neu_flat, article_comments_neu_flat, gridsize=100, bins='log')
+a4 = ax4.hexbin(neu_flat, article_comments_neu_flat, gridsize=100, bins='log', extent=[x_min, x_max, y_min, y_max])
 ax4.set_xlabel('Article Title Sentiment Score')
 ax4.set_ylabel('Facebook Comment Score')
 ax4.set_title('Article Title Sentiment vs Facebook Comment Sentiment Neutral')
@@ -841,8 +879,12 @@ cb4.set_label('log10(Counts)', fontsize = 15)
 
 
 ### Further Histogram to highlight the differences in pos neg and neu which should all be on the same axis
+x_min = 0
+x_max = 1
+y_min = 0
+y_max = 1
 fig, (ax2, ax3, ax4) = plt.subplots(nrows=1, ncols=3, figsize=(7, 4))
-a2 = ax2.hexbin(pos_flat, article_comments_pos_flat, gridsize=100, bins='log')
+a2 = ax2.hexbin(pos_flat, article_comments_pos_flat, gridsize=100, bins='log', extent=[x_min, x_max, y_min, y_max])
 ax2.set_xlabel('Article Title Sentiment Score')
 ax2.set_ylabel('Facebook Comment Score')
 ax2.set_title('Article Title Sentiment vs Facebook Comment Sentiment Positive')
@@ -851,7 +893,7 @@ ax2.set_ylim([0,1])
 cb2 = fig.colorbar(a1, ax=ax2)
 cb2.set_label('log10(Counts)', fontsize = 15)
 
-a3 = ax3.hexbin(neg_flat, article_comments_neg_flat, gridsize=100, bins='log')
+a3 = ax3.hexbin(neg_flat, article_comments_neg_flat, gridsize=100, bins='log', extent=[x_min, x_max, y_min, y_max])
 ax3.set_xlabel('Article Title Sentiment Score')
 ax3.set_ylabel('Facebook Comment Score')
 ax3.set_title('Article Title Sentiment vs Facebook Comment Sentiment Negative')
@@ -860,7 +902,7 @@ ax3.set_ylim([0,1])
 cb3 = fig.colorbar(a1, ax=ax3)
 cb3.set_label('log10(Counts)', fontsize = 15)
 
-a4 = ax4.hexbin(neu_flat, article_comments_neu_flat, gridsize=100, bins='log')
+a4 = ax4.hexbin(neu_flat, article_comments_neu_flat, gridsize=100, bins='log', extent=[x_min, x_max, y_min, y_max])
 ax4.set_xlabel('Article Title Sentiment Score')
 ax4.set_ylabel('Facebook Comment Score')
 ax4.set_title('Article Title Sentiment vs Facebook Comment Sentiment Neutral')
@@ -875,10 +917,10 @@ for i, j in zip(A, article_comments_sentiment):
 
 # So the line plot works ok, but a hexbin plot would allow further information on what the density
 # of certain parts of the graph are.
-
 A_flat = list(itertools.chain(*A))
 B_flat = list(itertools.chain(*article_comments_sentiment))
 
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 plt.scatter(A_flat,B_flat)
 plt.hexbin(A_flat,B_flat, gridsize=100, bins='log')
 plt.hexbin(A_flat,B_flat, gridsize=100, bins='log')
@@ -955,8 +997,7 @@ plt.ylim([0, 1])
 fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 gradient, intercept, r_value, p_value, std_err = stats.linregress(
                                                         neu_flat,
-                                                        article_comments_neu_flat,
-                                                        )
+                                                        article_comments_neu_flat)
 fit = np.array(neu_flat) * gradient + intercept
 # Scatter Plot of Absoluute Snetiment Values
 plt.scatter(neu_flat,article_comments_neu_flat,
@@ -980,5 +1021,3 @@ plt.xlabel('Article Title Sentiment')
 plt.ylabel('Article Comments Sentiment')
 plt.xlim([0, 1])
 plt.ylim([0, 1])
-
-

@@ -1,20 +1,32 @@
 import pandas as pd
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk import tokenize
 from matplotlib import pyplot as plt
 import numpy as np
-import math
-from sklearn.linear_model import LinearRegression
-from sklearn import linear_model
-from scipy import stats
 import itertools
 import ast
 
-df = pd.read_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-comments-t-sentiment-test.csv', encoding='utf-8', index_col=0)
+# Import Facebook Comments (on Articles) Short Datafile
+df = pd.read_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-comments-t-sentiment-test.csv',
+                 encoding='utf-8',
+                 index_col=0)
+
+# Import Facebook Comments (on Articles) Full Datafile
+# df = pd.read_csv('C:\Users\cmorris\Documents\wp7 non github\data\comments_test.csv',
+#                  encoding='utf-8',
+#                  index_col=0)
+
+# Fill nan values with empty space
+# Should be no nan values at this stage as should have been removed
 df['message'] = df['message'].fillna(u'')
 df['word_count'] = df['message'].apply(lambda x: len(tokenize.word_tokenize(x)))
 
+# Import Article Messages / Title Datafile
 df2 = pd.read_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-posts-sentiment-test.csv', encoding='utf-8', index_col=0)
+
+# Import Article Posts Messages Full Datafile
+# df = pd.read_csv('C:\Users\cmorris\Documents\wp7 non github\data\posts_test.csv',
+#                  encoding='utf-8',
+#                  index_col=0)
 
 # Extract Article Title Sentiments
 article_title_score = df2.article_title_score.values
@@ -22,24 +34,22 @@ article_title_pos = df2.article_title_pos.values
 article_title_neu = df2.article_title_neg.values
 article_title_neu = df2.article_title_neu.values
 
-# Extract reactions from the retarded pandas unicode format
+# Extract Article Reactions from the column containing a dictionary of reactions
+# from the retarded pandas unicode format
 df2.reactions = df2.reactions.apply(lambda x: ast.literal_eval(x))
 reactions = df2.reactions.values.tolist()
-# reaction dataframe
+# Store Reactions in its own dataframe
 rdf = pd.DataFrame(reactions)
-# Merge DataFrames
+# Merge Reaction DataFrame with Article Message Dataframe
 # Drop index as missing some indices cuasing concat not to line everything up appropriate
 df2.reset_index(drop=False, inplace=True)
 df2 = pd.concat([df2, rdf], ignore_index=False, axis = 1)
 
 # < 6 > Correlation between the reactions to an article and the sentiment of the article title
 
-# Correlation plots between Article Title and Reactions
-
-
-
+# Correlation between Article Title Sentiment and Reactions
+# Basic Scatter Graphs for each sentiment
 fig, ((ax1, ax2),(ax3, ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(7, 4))
-# ax = fig.add_subplot(111)
 for column in df2.columns[21:]:
     ax1.scatter(df2.article_title_score,df2['{}'.format(column)], label = column)
 for column in df2.columns[21:]:
@@ -48,15 +58,16 @@ for column in df2.columns[21:]:
     ax3.scatter(df2.article_title_neg,df2['{}'.format(column)], label = column)
 for column in df2.columns[21:]:
     ax4.scatter(df2.article_title_neu,df2['{}'.format(column)], label = column)
-ax1.set_xlabel('common xlabel')
-ax1.set_ylabel('common ylabel')
-
+ax1.set_xlabel('Article Sentiment')
+ax1.set_ylabel('Article Reaction')
 plt.xlabel('asdasd')
 plt.ylabel('sadasd')
 plt.legend()
 
-# Reactions All on Same Plot
+# Correlation between Article Title Sentiment and Reactions
+# Scatter plot of Reactions All on Same Plot
 fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(7, 4))
+# Flatten axes to effecively iterate over them
 for axis, sentiment in zip(list(itertools.chain(*axes)), df2.columns[17:21]):
     print axis
     print sentiment
@@ -66,20 +77,23 @@ for axis, sentiment in zip(list(itertools.chain(*axes)), df2.columns[17:21]):
     axis.set_xlabel('Sentiment')
     axis.set_ylabel('Frequency')
     axis.set_title('Article Title Sentiment vs Reaction Frequency - {}'.format(sentiment))
+# Add a common legend outside of the plots
 plt.legend(bbox_to_anchor=(1.05, 0), loc='lower left', borderaxespad=0.)
 plt.suptitle('Article Title Sentiment vs Reaction Frequency')
 
-# Reactions on Separate Plots
+# Article Title/Message Sentiment vs Reactions Hexbin Plot on Separate Plots
+# Column locations for Title Sentiment
 # Article Title Sentiment contained between df2.columns[17:21]
 # Article Message Sentiment constained between df2.columns[13:17]
-
-
 for reaction in df2.columns[21:]:
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(7, 4))
+
     # Article Message Sentiment:
     for axis, sentiment in zip(list(itertools.chain(*axes)), df2.columns[13:17]):
+
     # Article Title Sentiment:
     # for axis, sentiment in zip(list(itertools.chain(*axes)), df2.columns[17:21]):
+
         print axis
         print sentiment
         #for ax in axis:
@@ -100,38 +114,14 @@ for reaction in df2.columns[21:]:
 
 # < 7 >
 # Comparison of Article Reactions and Sentiment of Facebook Comments
-
-## before you do all this, drop nans from all the rows in df.
-print len(df)
+# Drop any nan instances in any of the comment message scores
 df.dropna(subset = ['message_score', 'message_pos', 'message_neg','message_neu'], inplace = True)
-print len(df)
-
 # Drop all rows from the parent comments and child comments that have a sentiment of 0 -
 df = df[(df.message_score != 0) & (df.message_pos != 0) & (df.message_neg != 0) & (df.message_neu != 1)]
-print len(df)
 
-# ids = df2.post_id.values.tolist()
-#
-#
-# article_post_ids = df2['post_id']
-#
-# article_comments_sentiment = []
-# article_comments_pos = []
-# article_comments_neg = []
-# article_comments_neu = []
-#
-# for id in article_post_ids:
-#     indexes = np.where(df2['post_id'] == id)[0]
-#
-#     article_comments_sentiment.append(df2['message_score'].iloc[indexes].values)
-#     article_comments_pos.append(df2['message_pos'].iloc[indexes].values)
-#     article_comments_neg.append(df2['message_neg'].iloc[indexes].values)
-#     article_comments_neu.append(df2['message_neu'].iloc[indexes].values)
-
-#
-
+# Create arrays containing the comments and reactions
+# Comment Arrays
 indexes = []
-
 article_comments_sentiment = []
 article_comments_pos = []
 article_comments_neg = []
@@ -144,13 +134,6 @@ for index in df2['post_id']:
     article_comments_pos.append(df['message_pos'].iloc[i].values)
     article_comments_neg.append(df['message_neg'].iloc[i].values)
     article_comments_neu.append(df['message_neu'].iloc[i].values)
-
-
-
-# Scratch that - can't flatten, as need to know position within the list
-# Arrays to compare: df2['like'] and df['message_score']
-
-
 
 # Reaction Arryas
 angry = []
@@ -187,9 +170,7 @@ for i, aa in enumerate(indexes):
 
 
 # Now, as everything is all lined up
-# you can flatten the lists and then plot them
-
-# Flattened arrays for hexbin plot
+# flatten the lists and plot the two in a hexplot
 angry = list(itertools.chain(*angry))
 haha = list(itertools.chain(*haha))
 like = list(itertools.chain(*like))
@@ -204,11 +185,15 @@ article_comments_pos = list(itertools.chain(*article_comments_pos))
 article_comments_neg = list(itertools.chain(*article_comments_neg))
 article_comments_neu = list(itertools.chain(*article_comments_neu))
 
-# For Plotting
+# Define function for hexplot
 def hexplot(x,y, xtitle, ytitle, title):
     fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(7, 4))
     # plt.hexbin(total_count,article_comments_pos, gridsize=100, bins='log')
-    a1 = axes.hexbin(x, y, gridsize=40, bins = 'log')
+    x_min = 0
+    x_max = 1
+    y_min = 0
+    y_max = max(y)
+    a1 = axes.hexbin(x, y, gridsize=40, bins = 'log', extent=[x_min, x_max, y_min, y_max])
     cb2 = fig.colorbar(a1, ax=axes)
     cb2.set_label('log10(Counts)', fontsize=15)
     axes.set_xlabel('{}'.format(xtitle))
@@ -219,6 +204,7 @@ def hexplot(x,y, xtitle, ytitle, title):
     plt.show()
     return 1
 
+# Create hexplot for
 hexplot(article_comments_pos,
         like,
         'Comment Sentiment (Positive)',
@@ -228,7 +214,6 @@ hexplot(article_comments_pos,
 
 # Can remove all instances where all comment sentiments are 0
 # i.e. a question what influences when someone posts a comment that does not have 0 sentiment attached to it
-#
 
 
 # fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(7, 4))

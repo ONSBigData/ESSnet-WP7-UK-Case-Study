@@ -1,0 +1,33 @@
+Hello there.
+
+I have a list of dictionaries like so:
+
+    d = [{'a': 1, 'b': 2, 'c': 3},{'a': 4, 'b': 5, 'c': 6},{'a': 7, 'b': 8, 'c': 9}]
+
+The order of keys within the dictionary may not be fixed.
+
+I have a pandas dataframe like so:
+
+      description  price  a  b  c
+    0         red      0  0  0  0
+    1        blue      1  0  0  0
+    2       green      2  0  0  0
+
+
+    df = pd.DataFrame({'price':[0,1,2], 'description': ['red', 'blue', 'green']})
+    df['a'] = 0
+    df['b'] = 0
+    df['c'] = 0
+
+I want to convert the dictionary to a pandas series/dataframe and merge/add this dataframe to the existing dataframe, where position in list = row in dataframe.
+
+Expected output:
+
+
+      description  price  a  b  c
+    0         red      0  1  2  3
+    1        blue      1  4  5  6
+    2       green      2  7  8  9
+
+
+

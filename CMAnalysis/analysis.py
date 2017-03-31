@@ -12,7 +12,9 @@ from scipy import stats
 # Section 1: Focusses on Analysis of Facebook Comments
 
 # Import Comments and Associated Sentiment Calculation
-df = pd.read_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-comments-t-sentiment.csv', encoding='utf-8', index_col=0)
+df = pd.read_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-comments-t-sentiment.csv',
+                 encoding='utf-8',
+                 index_col=0)
 # Convert empty na cells to Unicode empty strings -
 # Should we not just get ride of them?
 # Discuss with Alessandra on how to treat NA data.
@@ -97,9 +99,12 @@ parentwordlength = parentwordlength[parentindices]
 
 
 # Plot histogram, scatter plot, and hexplot for the parent comments
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 plt.hist(parentsentiment, bins = 1000, normed = True)
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 plt.hist(parentwordlength, bins =1000, normed = True)
 # PLot a hexbin of parent comment word length vs parent comment sentiment
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 plt.hexbin(parentwordlength, parentsentiment, gridsize = 50, bins = 'log')
 plt.scatter(parentwordlength, parentsentiment, s = 1)
 
@@ -160,6 +165,7 @@ for i, index in enumerate(parentindex):
         child_sentiments.append(df['sentiment'] [parentindex[i]+1:parentindex[i+1]] )
 
 # Plot of all child sentiments for each post (chronological)
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 for i in child_sentiments:
     plt.plot(i)
 plt.title('Plot of All Child Sentiments, Chronological, and Grouped by Parent Comment')
@@ -173,6 +179,7 @@ for i in child_sentiments:
     child_sentiments_mean.append(np.mean(i))
 
 # Plot the mean values for each post, scatter included
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 plt.plot(child_sentiments_mean)
 plt.scatter(np.linspace(0, len(child_sentiments_mean), len(child_sentiments_mean)),
             child_sentiments_mean,
@@ -209,6 +216,7 @@ ps = np.array(y)
 gradient, intercept, r_value, p_value, std_err = stats.linregress(ps, csm)
 print('Linear regression using stats.linregress')
 fit = ps * gradient + intercept
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 plt.scatter(ps, csm, s = 1, label = 'Scatter Plot Parent vs Child', c = 'b')
 plt.plot(ps, fit, label = 'Linear Regression Fit', c='c')
 plt.title('Absolute Parent Sentiment vs Absolute Child Sentiment Mean (Grouped) - Linear Regression Fit\n'
@@ -247,6 +255,7 @@ print('Linear regression using stats.linregress')
 # Create the linear regression line
 fit = np.array(map(abs, df2['article_title_sentiment'])) * gradient + intercept
 # Scatter Plot of Absoluute Snetiment Values
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 plt.scatter(map(abs, df2['article_title_sentiment']),
             map(abs, df2['message_sentiment']),
             s = 5,
@@ -310,6 +319,7 @@ for sentiments in article_comments_sentiment:
     article_comments_sentiment_means.append( np.mean(sentiments) )
 
 # Non Absolute Plot
+fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 plt.scatter(article_message_sentiment, article_comments_sentiment_means, label = 'Scatter Plot')
 # Absolute Plot (Using the map(abs, XX) functionality discussed:
 # plt.scatter(map(abs, article_message_sentiment),
@@ -336,25 +346,22 @@ plt.ylim([-1, 1])
 
 # Extract the ids for article sentiment and extract the message sentiment where they are.
 # ToDo
-A = []
-for i in article_comments_sentiment:
-    A.append(np.zeros(len(i)))
 
+# A = []
+# for i in article_comments_sentiment:
+#     A.append(np.zeros(len(i)))
+#
+#
+# # Will need to investigate it like this.
+# for i, aa in enumerate(A):
+#     print i, aa
+#     for j, k in enumerate(aa):
+#         print j, k
+#         A[i][j] = article_message_sentiment[i]
 
-# Will need to investigate it like this.
-for i, aa in enumerate(A):
-    print i, aa
-    for j, k in enumerate(aa):
-        print j, k
-        A[i][j] = article_message_sentiment[i]
-
-
-#new_array = []
-#for i,j in enumerate(article_comments_sentiment):
-#    new_array.append( [article_message_sentiment[i] for k in ]
-
-
-
+# new_array = []
+# for i,j in enumerate(article_comments_sentiment):
+#     new_array.append( [article_message_sentiment[i] for k in ]
 # Square 2d Histogram Plot
 # Linear
 # x = []
@@ -379,18 +386,6 @@ for i, aa in enumerate(A):
 # # cb.set_label('Counts', fontsize = 15)
 # plt.tight_layout()
 
-
-
-
-
-
-
-
-
-
-
-
-
 # plt.hist2d(df['word count'], df['sentiment'], bins = 100)
 # plt.xlim([0, 100])
 # plt.show()
@@ -411,5 +406,3 @@ for i, aa in enumerate(A):
 # plt.hexbin(x, y)
 # plt.xlim([0, 100])
 # plt.clf()
-
-
