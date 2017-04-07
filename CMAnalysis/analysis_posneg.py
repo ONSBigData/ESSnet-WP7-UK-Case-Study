@@ -5,6 +5,7 @@ import numpy as np
 import math
 from scipy import stats
 import itertools
+import ast
 
 # Analysis_posneg focusses on building from the previous work carried out in analysis
 # Here we look at analysing not just the overall score but
@@ -15,6 +16,15 @@ import itertools
 # Section 1: Focusses on Analysis of Facebook Comments
 # Import Comments and Associated Sentiment Calculation
 df = pd.read_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-comments-t-sentiment-test.csv', encoding='utf-8', index_col=0)
+
+# Import for Full dataset
+
+df = pd.read_csv('C:\Users\cmorris\Documents\wp7 non github\data\comments_final_test.csv',
+                 encoding='utf-8',
+                 index_col=0)
+
+
+
 # Convert empty na cells to Unicode empty strings -
 # Should we not just get ride of them?
 # Discuss with Alessandra on how to treat NA data.
@@ -56,25 +66,25 @@ y = []
 # Filter out the nan vales and constrain the range
 # (hexbin does not do this automatically)
 for i, v in zip(df['word_count'].values, df['message_score'].values):
-    if i <= 100 and i > 0 and ~math.isnan(i) and ~math.isnan(v):
+    if i <= 1654 and i > 0 and ~math.isnan(i) and ~math.isnan(v):
         x.append(i)
         y.append(v)
 x = np.array(x)
 y = np.array(y)
 fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 x_min = 0
-x_max = 100
+x_max = 1654
 y_min = -1
 y_max = 1
 hb = ax.hexbin(x, y, gridsize=19, extent=[x_min, x_max, y_min, y_max])
 line = ax.plot([0, 0], [0, 0], c='w')
-ax.axis([0, 100, -1, 1])
+ax.axis([0, 1654, -1, 1])
 ax.set_title('Hexagonal Bin Plot'
              '\nComment Sentiment (Overall Score) vs Comment Word Count'
-             '\nfor parent + child Facebook Comments'
+             #'\nfor parent + child Facebook Comments'
              '\nMax Word Count <= 100', fontsize = 18)
 ax.set_xlabel('Comment Word Count', fontsize = 12)
-ax.set_ylabel('Comment Sentiment (Overall Score) Normalised by Sentence Count)', fontsize = 12)
+ax.set_ylabel('Comment Sentiment (Overall Score) Normalised by Sentence Count', fontsize = 12)
 cb = fig.colorbar(hb, ax=ax)
 cb.set_label('Counts', fontsize = 15)
 # plt.tight_layout()
@@ -86,19 +96,19 @@ x = []
 y = []
 # Filter out the Nan values and constrain the range (hexbin does not do this automatically)
 for i, v in zip(df['word_count'].values, df['message_score'].values):
-    if i <= 100 and i > 0 and ~math.isnan(i) and ~math.isnan(v):
+    if i <= 850 and i > 0 and ~math.isnan(i) and ~math.isnan(v):
         x.append(i)
         y.append(v)
 x = np.array(x)
 y = np.array(y)
 fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 x_min = 0
-x_max = 100
+x_max = 850
 y_min = -1
 y_max = 1
 hb = ax.hexbin(x, y, gridsize=50, bins='log', extent=[x_min, x_max, y_min, y_max])
 line = ax.plot([0, 0], [0, 0], c='w')
-ax.axis([0, 100, -1, 1])
+ax.axis([0, 850, -1, 1])
 ax.set_title('Hexagonal Bin Plot'
              '\nComment Sentiment (Overall Score) vs Comment Word Count'
              '\nfor parent + child Facebook Comments'
@@ -291,24 +301,41 @@ cb.set_label('log10(Counts)', fontsize = 15)
 # Use this to know at what threshold to remove the child / parent comments for analysis
 # I.e. if they are outisde of the main 75% threshold then should ignore.
 
+
+# import ast
+# The new file has a multile data types within comment_count
+# Remove anything that isn't either float
+# Could also leave unicode in but currently: NAH
+remove = []
+for i, v in enumerate(df.comment_count.values):
+    if type(v) != float:
+        remove.append(i)
+df.drop(df.index[[remove]], inplace=True)
+
+
+# A = ast.literal_eval(A[bad_a])
+# A = A[A != 1]
+
 fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 # A = df[df['comment_count'] !=0 ].comment_count.values
-A = df[df['comment_count'] > 9].comment_count.values
-# A = A[A != 1]
+A = df[df['comment_count'] >= 0].comment_count.values
 me = np.mean(A)
 med = np.median(A)
 
-ax.hist(A,bins = 139, normed = False)
+ax.hist(A,bins = 400, normed = False)
 # ax.hist(A,bins = 148, normed = False)
 plt.title('Frequency Plot of Number of Child Comments made in response to a single Parent Comment'
           '\nIgnores Parent Comments with less than 10 Child Comments'
           '\nTotal Number of Parent Comments = {}'
-          '\nTotal Number of Child Comments = {}'
-          '\nMean = {} - Median = {}'.format(len(A),sum(A), np.round(me,2), med))
+          '\nTotal Number of Child Comments = {}')
+ #         '\nMean = {} - Median = {}'.format(len(A),sum(A), np.round(me,2), med))
 ax.set_xlabel('Number of Child Comments in response to a single Parent Comment', fontsize = 12)
 ax.set_ylabel('Frequency)', fontsize = 12)
 # < 2 >  Compare Sentiment of Parent sentiment and Word length to parent Comments
 
+# This is where analysis on the big data set got to on Friday
+##################################################################################
+##################################################################################
 
 # Generate parent arrays for sentiment and word length
 # Parents comments can be distinguished by looking at the where the column column_count ! = 0

@@ -6,14 +6,14 @@ import itertools
 import ast
 
 # Import Facebook Comments (on Articles) Short Datafile
-df = pd.read_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-comments-t-sentiment-test.csv',
-                 encoding='utf-8',
-                 index_col=0)
-
-# Import Facebook Comments (on Articles) Full Datafile
-# df = pd.read_csv('C:\Users\cmorris\Documents\wp7 non github\data\comments_test.csv',
+# df = pd.read_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-comments-t-sentiment-test.csv',
 #                  encoding='utf-8',
 #                  index_col=0)
+
+# Import Facebook Comments (on Articles) Full Datafile
+df = pd.read_csv('C:\Users\cmorris\Documents\wp7 non github\data\comments_final_test.csv',
+                 encoding='utf-8',
+                 index_col=0)
 
 # Fill nan values with empty space
 # Should be no nan values at this stage as should have been removed
@@ -21,12 +21,12 @@ df['message'] = df['message'].fillna(u'')
 df['word_count'] = df['message'].apply(lambda x: len(tokenize.word_tokenize(x)))
 
 # Import Article Messages / Title Datafile
-df2 = pd.read_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-posts-sentiment-test.csv', encoding='utf-8', index_col=0)
+# df2 = pd.read_csv('C:/Users/cmorris/PycharmProjects/wp7/data/fb-posts-sentiment-test.csv', encoding='utf-8', index_col=0)
 
 # Import Article Posts Messages Full Datafile
-# df = pd.read_csv('C:\Users\cmorris\Documents\wp7 non github\data\posts_test.csv',
-#                  encoding='utf-8',
-#                  index_col=0)
+df2 = pd.read_csv('C:\Users\cmorris\Documents\wp7 non github\data\posts_final_test.csv',
+                 encoding='utf-8',
+                 index_col=0)
 
 # Extract Article Title Sentiments
 article_title_score = df2.article_title_score.values
@@ -34,45 +34,66 @@ article_title_pos = df2.article_title_pos.values
 article_title_neu = df2.article_title_neg.values
 article_title_neu = df2.article_title_neu.values
 
+
+# Err: DOn't need the following lines when dealing with the full datat set as reactions explicitly defined.
+# Instead renmae the columns to fit with current titles used in this work
 # Extract Article Reactions from the column containing a dictionary of reactions
 # from the retarded pandas unicode format
-df2.reactions = df2.reactions.apply(lambda x: ast.literal_eval(x))
-reactions = df2.reactions.values.tolist()
 # Store Reactions in its own dataframe
-rdf = pd.DataFrame(reactions)
+
 # Merge Reaction DataFrame with Article Message Dataframe
 # Drop index as missing some indices cuasing concat not to line everything up appropriate
-df2.reset_index(drop=False, inplace=True)
-df2 = pd.concat([df2, rdf], ignore_index=False, axis = 1)
+
+# df2.reactions = df2.reactions.apply(lambda x: ast.literal_eval(x))
+# reactions = df2.reactions.values.tolist()
+# rdf = pd.DataFrame(reactions)
+# df2.reset_index(drop=False, inplace=True)
+# df2 = pd.concat([df2, rdf], ignore_index=False, axis = 1)
+
+# Rename Columns
+
+df2.rename(columns={'reactions.angry': 'angry',
+                   'reactions.haha': 'haha',
+                   'reactions.like': 'like',
+                   'reactions.love': 'love',
+                   'reactions.sad': 'sad',
+                   'reactions.thankful': 'thankful',
+                   'reactions.total_count': 'total_count',
+                   'reactions.wow': 'wow'}, inplace=True)
+
 
 # < 6 > Correlation between the reactions to an article and the sentiment of the article title
+
+# Article Title Sentiment contained between df2.columns[23:27]
+# Article Message Sentiment constained between df2.columns[29:23]
+# Reactions contained in columns [9:17]
 
 # Correlation between Article Title Sentiment and Reactions
 # Basic Scatter Graphs for each sentiment
 fig, ((ax1, ax2),(ax3, ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(7, 4))
-for column in df2.columns[21:]:
+for column in df2.columns[9:17]:
     ax1.scatter(df2.article_title_score,df2['{}'.format(column)], label = column)
-for column in df2.columns[21:]:
+for column in df2.columns[9:17]:
     ax2.scatter(df2.article_title_pos,df2['{}'.format(column)], label = column)
-for column in df2.columns[21:]:
+for column in df2.columns[9:17]:
     ax3.scatter(df2.article_title_neg,df2['{}'.format(column)], label = column)
-for column in df2.columns[21:]:
+for column in df2.columns[9:17]:
     ax4.scatter(df2.article_title_neu,df2['{}'.format(column)], label = column)
 ax1.set_xlabel('Article Sentiment')
 ax1.set_ylabel('Article Reaction')
-plt.xlabel('asdasd')
-plt.ylabel('sadasd')
+plt.xlabel('Article Sentiment')
+plt.ylabel('Article Reaction')
 plt.legend()
 
 # Correlation between Article Title Sentiment and Reactions
 # Scatter plot of Reactions All on Same Plot
 fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(7, 4))
 # Flatten axes to effecively iterate over them
-for axis, sentiment in zip(list(itertools.chain(*axes)), df2.columns[17:21]):
+for axis, sentiment in zip(list(itertools.chain(*axes)), df2.columns[23:27]):
     print axis
     print sentiment
     #for ax in axis:
-    for column in df2.columns[21:]:
+    for column in df2.columns[9:17]:
         axis.scatter(df2['{}'.format(sentiment)],df2['{}'.format(column)], label = column, s = 4)
     axis.set_xlabel('Sentiment')
     axis.set_ylabel('Frequency')
@@ -85,17 +106,25 @@ plt.suptitle('Article Title Sentiment vs Reaction Frequency')
 # Column locations for Title Sentiment
 # Article Title Sentiment contained between df2.columns[17:21]
 # Article Message Sentiment constained between df2.columns[13:17]
-for reaction in df2.columns[21:]:
+for reaction in df2.columns[9:17]:
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(7, 4))
 
+    #max_reaction = 0
+    #if max(df2['{}'.format(reaction)]) > max_reaction:
+    #    max_reaction = max(df2['{}'.format(reaction)])
+    #print max_reaction
+
+
+
     # Article Message Sentiment:
-    for axis, sentiment in zip(list(itertools.chain(*axes)), df2.columns[13:17]):
+    # for axis, sentiment in zip(list(itertools.chain(*axes)), df2.columns[13:17]):
 
     # Article Title Sentiment:
-    # for axis, sentiment in zip(list(itertools.chain(*axes)), df2.columns[17:21]):
+    for axis, sentiment in zip(list(itertools.chain(*axes)), df2.columns[23:27]):
 
         print axis
         print sentiment
+
         #for ax in axis:
 
         # axis.scatter(df2['{}'.format(sentiment)],df2['{}'.format(reaction)], label = reaction, s = 4)
@@ -104,13 +133,14 @@ for reaction in df2.columns[21:]:
         axis.set_ylabel('Frequency')
         axis.set_title('{} vs {} Frequency '.format(sentiment, reaction))
         axis.set_xlim([0,1])
-        axis.set_ylim([0, 15000])
+        axis.set_ylim([0, 50000])
     list(itertools.chain(*axes))[0].set_xlim([-1,1])
     plt.legend(bbox_to_anchor=(1.05, 0), loc='lower left', borderaxespad=0.)
     # Title Sentiment
     # plt.suptitle('Article Title Sentiment vs {} Frequency'.format(reaction))
     # Message Sentiment
     plt.suptitle('Article Message Sentiment vs {} Frequency'.format(reaction))
+
 
 # < 7 >
 # Comparison of Article Reactions and Sentiment of Facebook Comments
@@ -189,24 +219,24 @@ article_comments_neu = list(itertools.chain(*article_comments_neu))
 def hexplot(x,y, xtitle, ytitle, title):
     fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(7, 4))
     # plt.hexbin(total_count,article_comments_pos, gridsize=100, bins='log')
-    x_min = 0
+    x_min = -1
     x_max = 1
     y_min = 0
     y_max = max(y)
-    a1 = axes.hexbin(x, y, gridsize=40, bins = 'log', extent=[x_min, x_max, y_min, y_max])
+    a1 = axes.hexbin(x, y, gridsize=75, bins = 'log', extent=[x_min, x_max, y_min, y_max])
     cb2 = fig.colorbar(a1, ax=axes)
     cb2.set_label('log10(Counts)', fontsize=15)
     axes.set_xlabel('{}'.format(xtitle))
     axes.set_ylabel('{}'.format(ytitle))
     axes.set_title('{}'.format(title))
-    axes.set_xlim([0, 1])
+    axes.set_xlim([-1, 1])
     axes.set_ylim([0, max(y)])
     plt.show()
     return 1
 
 # Create hexplot for
-hexplot(article_comments_pos,
-        like,
+hexplot(article_comments_sentiment,
+        total_count,
         'Comment Sentiment (Positive)',
         'Reaction Frequency - Total Count',
         'Hexbin Plot Positive Sentiment vs total_count frequency'
