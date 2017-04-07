@@ -219,7 +219,7 @@ article_comments_neu = list(itertools.chain(*article_comments_neu))
 def hexplot(x,y, xtitle, ytitle, title):
     fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(7, 4))
     # plt.hexbin(total_count,article_comments_pos, gridsize=100, bins='log')
-    x_min = -1
+    x_min = 0
     x_max = 1
     y_min = 0
     y_max = max(y)
@@ -229,14 +229,14 @@ def hexplot(x,y, xtitle, ytitle, title):
     axes.set_xlabel('{}'.format(xtitle))
     axes.set_ylabel('{}'.format(ytitle))
     axes.set_title('{}'.format(title))
-    axes.set_xlim([-1, 1])
+    axes.set_xlim([0, 1])
     axes.set_ylim([0, max(y)])
     plt.show()
     return 1
 
 # Create hexplot for
-hexplot(article_comments_sentiment,
-        total_count,
+hexplot(article_comments_pos,
+        like,
         'Comment Sentiment (Positive)',
         'Reaction Frequency - Total Count',
         'Hexbin Plot Positive Sentiment vs total_count frequency'
