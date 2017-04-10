@@ -47,18 +47,16 @@ print pd.Series(lex.values()).describe()
 
 def paragraph_sentiment(paragraph):
     sid = SentimentIntensityAnalyzer()
+    score = 0.0
     if paragraph:
         sentences = tokenize.sent_tokenize(paragraph)
-        score = 0.0
         for sentence in sentences:
             ss = sid.polarity_scores(sentence)
             score += ss['compound']
         numofsents = float(len(sentences))
-        normalisedcompoundscore = score / numofsents
-        return normalisedcompoundscore
+        score = score / numofsents
+    return score
 
-    else:
-        return float('NaN')
 
 
 import time
