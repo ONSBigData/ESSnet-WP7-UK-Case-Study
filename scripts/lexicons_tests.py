@@ -46,7 +46,7 @@ def get_nrc_scores(text):
     scores  = vect.dot(values)
     return scores
 
-def get_nrc_emotions(text):
+def get_nrc_emotions(text, plot_dist=False):
     vectorizer = CountVectorizer(vocabulary=nrc['word'])
     vect = vectorizer.fit_transform(text)
     colnames = [u'anger', u'anticipation', u'disgust',
@@ -54,6 +54,10 @@ def get_nrc_emotions(text):
                 u'trust']
     values = csr_matrix(nrc[colnames].values)
     scores = vect.dot(values)
+    if plot_dist:
+        for emotion in colnames:
+            vocabulary = nrc[nrc[emotion] > 0]['word']
+            freq = vect[:, vocabulary]
     return pd.DataFrame(scores.todense(), columns=colnames)
 
 
