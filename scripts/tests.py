@@ -117,7 +117,14 @@ emotions = get_nrc_emotions(comments['message'])
 emotions.set_index(comments.index, inplace = True)
 emotions = emotions.div(emotions.sum(axis=1), axis='index')*100
 emotions.fillna(0, inplace=True)
-emotions.resample('H').mean().rolling(24).mean().plot()
+ax = plt.figure(figsize=(15,20), dpi=100).add_subplot(111)
+emotions.resample('H').mean().rolling(24).mean().plot(ax=ax, xlim=(dStart, dEnd), xticks=xticks.to_pydatetime(), colormap='Paired')
+ax.set_xticklabels([x.strftime('%a\n%d\n%h\n%Y') for x in xticks]);
+ax.set_xticklabels([], minor=True)
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.10),
+          ncol=4, fancybox=True, shadow=True)
+plt.show()
+
 
 # Vader Pos vs. Neg
 positives = all_methods['vader'][all_methods['vader'] > 0]

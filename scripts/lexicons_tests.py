@@ -21,7 +21,7 @@ afinn.drop_duplicates('word', inplace = True)
 syuzhet = pd.read_csv("syuzhet.csv")
 syuzhet.drop_duplicates('word', inplace = True)
 
-nrc = pd.read_csv("nrc.csv", header=0, names = [u'word', u'anger', u'anticipation', u'disgust', u'fear', u'joy',
+nrc = pd.read_csv("nrc2.csv", header=0, names = [u'word', u'anger', u'anticipation', u'disgust', u'fear', u'joy',
        u'negative', u'positive', u'sadness', u'surprise', u'trust'])
 nrc.drop_duplicates('word', inplace = True)
 nrc['value'] = nrc['positive']-nrc['negative']
@@ -57,7 +57,15 @@ def get_nrc_emotions(text, plot_dist=False):
     if plot_dist:
         for emotion in colnames:
             vocabulary = nrc[nrc[emotion] > 0]['word']
-            freq = vect[:, vocabulary]
+            out = vect.tocsc()[:,np.array(vocabulary.index)]
+            freqs = pd.DataFrame({'value': np.array(out.sum(axis = 0)).reshape(-1,)},
+                                 index=vocabulary)
+            ax = plt.figure(figsize=(15,20), dpi=100).add_subplot(111)
+            top_freqs = freqs.sort_values('value', ascending=False).iloc[:30]
+            top_freqs.plot(ax=ax, xticks=range(30), legend=False)
+            ax.set_xticklabels(top_freqs.index,  rotation=90)
+            ax.set_title(emotion[0].upper()+emotion[1:])
+            plt.show()
     return pd.DataFrame(scores.todense(), columns=colnames)
 
 
