@@ -117,7 +117,7 @@ emotions = get_nrc_emotions(comments['message'])
 emotions.set_index(comments.index, inplace = True)
 emotions = emotions.div(emotions.sum(axis=1), axis='index')*100
 emotions.fillna(0, inplace=True)
-emotions.resample('D').mean().rolling(7).mean().plot()
+emotions.resample('H').mean().rolling(24).mean().plot()
 
 # Vader Pos vs. Neg
 positives = all_methods['vader'][all_methods['vader'] > 0]
