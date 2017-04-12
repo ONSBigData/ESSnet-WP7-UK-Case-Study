@@ -32,7 +32,7 @@ mongo_ids = [post.pop('_id', None) for post in posts] # exclude mongo generated 
 docs = d_to_df(docs)
 docs['created_time'] = pd.to_datetime(docs['created_time'],format="%Y-%m-%dT%H:%M:%S+0000")
 docs.set_index('created_time', inplace = True)
-docs.drop_duplicates(['message', 'user.name'], inplace=True)
+docs.drop_duplicates(['message', 'user.name', 'post_id'], inplace=True)
 docs['n_sents'] = docs.message.apply(lambda x: len(sent_tokenize(x)))
 docs = docs[docs['n_sents'] != 0].copy()
 
@@ -48,7 +48,7 @@ posts.set_index('created_time', inplace=True)
 bing_scores = get_scores(docs['message'], bing)
 afinn_scores = get_scores(docs['message'], afinn)
 syuzhet_scores = get_scores(docs['message'], syuzhet)
-nrc_scores = get_scores(docs['message'], nrc)
+nrc_scores = get_scores(docs['message'], nrc) # used version 2 of the nrc lexicon
 vader_scores = docs.message.apply(paragraph_sentiment)
 all_methods = pd.DataFrame({'bing': bing_scores,
               'afinn': afinn_scores,

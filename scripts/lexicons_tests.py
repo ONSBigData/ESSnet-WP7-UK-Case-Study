@@ -46,7 +46,7 @@ def get_nrc_scores(text):
     scores  = vect.dot(values)
     return scores
 
-def get_nrc_emotions(text, plot_dist=False):
+def get_nrc_emotions(text, plot_dist=False, n_words=10):
     vectorizer = CountVectorizer(vocabulary=nrc['word'])
     vect = vectorizer.fit_transform(text)
     colnames = [u'anger', u'anticipation', u'disgust',
@@ -61,11 +61,14 @@ def get_nrc_emotions(text, plot_dist=False):
             freqs = pd.DataFrame({'value': np.array(out.sum(axis = 0)).reshape(-1,)},
                                  index=vocabulary)
             ax = plt.figure(figsize=(15,20), dpi=100).add_subplot(111)
-            top_freqs = freqs.sort_values('value', ascending=False).iloc[:30]
-            top_freqs.plot(ax=ax, xticks=range(30), legend=False)
+            top_freqs = freqs.sort_values('value', ascending=False).iloc[:n_words]
+            top_freqs.plot(ax=ax, xticks=range(n_words), legend=False)
             ax.set_xticklabels(top_freqs.index,  rotation=90)
             ax.set_title(emotion[0].upper()+emotion[1:])
             plt.show()
+            print emotion
+            print top_freqs
+            print
     return pd.DataFrame(scores.todense(), columns=colnames)
 
 
@@ -151,6 +154,32 @@ def get_scores_with_lemma(text, vocab):
     values = np.array(vocab['value'])
     scores  = vect.dot(values)
     return scores
+
+def get_nrc_emotions_with_lemma(text, plot_dist=False, n_words=10):
+    vectorizer = CountVectorizer(tokenizer=LemmaTokenizer(), vocabulary=nrc['word'])
+    vect = vectorizer.fit_transform(text)
+    colnames = [u'anger', u'anticipation', u'disgust',
+                u'fear', u'joy', u'sadness', u'surprise',
+                u'trust']
+    values = csr_matrix(nrc[colnames].values)
+    scores = vect.dot(values)
+    if plot_dist:
+        for emotion in colnames:
+            vocabulary = nrc[nrc[emotion] > 0]['word']
+            out = vect.tocsc()[:,np.array(vocabulary.index)]
+            freqs = pd.DataFrame({'value': np.array(out.sum(axis = 0)).reshape(-1,)},
+                                 index=vocabulary)
+            ax = plt.figure(figsize=(15,20), dpi=100).add_subplot(111)
+            top_freqs = freqs.sort_values('value', ascending=False).iloc[:n_words]
+            top_freqs.plot(ax=ax, xticks=range(n_words), legend=False)
+            ax.set_xticklabels(top_freqs.index,  rotation=90)
+            ax.set_title(emotion[0].upper()+emotion[1:])
+            plt.show()
+
+            print emotion
+            print top_freqs
+            print
+    return pd.DataFrame(scores.todense(), columns=colnames)
 
 
 bing_scores_l = get_scores_with_lemma(validated['message'], bing)
