@@ -16,17 +16,14 @@ comments['word_count'] = comments['message'].apply(lambda x: len(tokenize.word_t
 
 # Hexagonal Hexbin Plot - up to 100 word count
 # Logarithmic Color Bar
-x = np.array(comments2[(comments['word_count'] > 0) & (comments['word_count'] <= 800)]['word_count'])
-y = np.array(sentiment2[(comments['word_count'] > 0) & (comments['word_count'] <= 800)]['vader'])
+x = np.array(comments[(comments['word_count'] > 0) & (comments['word_count'] <= 800)]['word_count'])
+y = np.array(sentiment[(comments['word_count'] > 0) & (comments['word_count'] <= 800)]['vader'])
 fig, ax = plt.subplots(ncols=1, figsize=(7, 4))
 
-xmin = 0
-xmax = 800
-ymin = -1
-ymax = 1
+xmin, xmax, ymin, ymax = 0, 100, -1, 1
+
 hb = ax.hexbin(x, y, gridsize=50, bins='log', cmap='viridis', extent = [xmin, xmax, ymin, ymax])
-line = ax.plot([0, 0], [0, 0], c='w')
-ax.axis([0, 800, -1, 1])
+ax.axis([xmin, xmax, ymin, ymax])
 ax.set_title('Hexagonal Bin Plot of Comment Sentiment vs Comment Word Count with Log colour scale'
              '\nfor Facebook Comments in response to Guardian News Articles'
              '\nMax Word Count constrained to 100', fontsize = 18)

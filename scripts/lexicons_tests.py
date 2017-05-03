@@ -110,7 +110,7 @@ simple_rescaled.corr()
 simple_rescaled.resample('.5*H').mean().plot()
 vader_rescaled.resample('H').mean().plot()
 
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
 validated = pd.read_csv("validated_gd.csv", index_col=0, parse_dates=True, encoding="utf-8")
 bing_scores = get_scores(validated['message'], bing)
 afinn_scores = get_scores(validated['message'], afinn)
@@ -133,11 +133,16 @@ validated['vader'] = validated.message.apply(paragraph_sentiment)
 validated[['A_Score', 'afinn', 'bing', 'nrc', 'syuzhet', 'vader']].corr()
 
 f = lambda r: ['P' if x > 0.2 else 'N' if x < -0.2 else 'X' for x in r]
-sentiment = validated[['A_Score', 'afinn', 'bing', 'nrc', 'syuzhet', 'vader']].apply(f)
-sentiment.columns = ['Manual', 'Afinn', 'Bing', 'NRC', 'Syuzhet', 'Vader']
-for method in sentiment.columns[1:]:
+validated_sentiment = validated[['A_Score', 'afinn', 'bing', 'nrc', 'syuzhet', 'vader']].apply(f)
+validated_sentiment.columns = ['Manual', 'Afinn', 'Bing', 'NRC', 'Syuzhet', 'Vader']
+for method in validated_sentiment.columns[1:]:
     print "Print classification metrics for method %s ...... " %method
-    print classification_report(sentiment['Manual'], sentiment[method])
+    print classification_report(validated_sentiment['Manual'], validated_sentiment[method])
+
+for method in validated_sentiment.columns[1:]:
+    correct = confusion_matrix(validated_sentiment['Manual'], validated_sentiment[method]).diagonal()
+    error = (1 - correct.sum()/float(len(validated_sentiment))) *100
+    print "Classification error for method %s : %.2f %% " %(method, error)
 
 
 from nltk import word_tokenize
