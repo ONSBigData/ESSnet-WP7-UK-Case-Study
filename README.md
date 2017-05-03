@@ -24,3 +24,26 @@ This pilot study was set to provide:
 * An assessment of the Facebook users leaving comments to determine distribution of gender and residency, and how this relates to the Guardian readership
 
 ### Content ###
+
+The *WP7_ONS_files* folder contains the following files and folders:
+
+##### Report
+
+* **Final_doc.docx** the final report document
+
+##### Python scripts
+
+* **collect_data.py** to collect data (comments and posts) from the Facebook API
+* **get_sentiment.py** to compute the sentiment using the different lexicons. The files generated are then saved in the **data** folder 
+* **analysis.py** for reproducing the analysis and the charts of the report
+* **utils.py** containing some util functions
+
+##### Folders
+
+* **images** folder which contains all images used in the final document and generated with the **analysis.py** file
+* **data** folder which contains the processed data for the analysis. 
+    - **comments.csv** the processed comments collected through the Facebook API excluding empty comments
+    - **posts.csv** the processed posts collected through the Facebook API
+    - **sentiment.csv** the normalised sentiment scores obtained with the Vader, NRC, Syuzhet, AFinn and Bing lexicons
+    - **emotions.csv** the emotions scores calculated using the NRC lexicon
+* **lexicons** folder which contains the lexicons used in the analysis, i.e. NRC, Syuzhet, AFinn and Bing in csv format
