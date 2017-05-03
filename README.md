@@ -1,5 +1,6 @@
 # ESSnet WP7 - Population #
 
+
 The Office for National Statistics (ONS) is involved in the Big Data ESSNet. This is a programme of work funded by Eurostat, coordinated by CBS Netherlands and involving other 20 NSI partners. 
 
 The aim of the Big Data ESSNet is to investigate how a combination of Big Data sources and existing official statistical data can be used to improve current statistics and create new statistics in statistical domains.
@@ -47,3 +48,7 @@ The *WP7_ONS_files* folder contains the following files and folders:
     - **sentiment.csv** the normalised sentiment scores obtained with the Vader, NRC, Syuzhet, AFinn and Bing lexicons
     - **emotions.csv** the emotions scores calculated using the NRC lexicon
 * **lexicons** folder which contains the lexicons used in the analysis, i.e. NRC, Syuzhet, AFinn and Bing in csv format
+
+### Contributors ###
+
+Alessandra Sozzi and Charles Morris
