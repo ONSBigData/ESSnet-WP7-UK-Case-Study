@@ -51,4 +51,4 @@ The *WP7_ONS_files* folder contains the following files and folders:
 
 ### Contributors ###
 
-Alessandra Sozzi and Charles Morris
+[Alessandra Sozzi](mailto:alessandra.sozzi@ons.gov.uk) and [Charles Morris](mailto:charles.morris@ons.gov.uk)
