@@ -10,6 +10,7 @@ from collections import Counter
 import matplotlib.pyplot as plt
 import seaborn; seaborn.set()
 
+#### EXTRA : Little bit of trend analysis
 
 # Read the data
 sentiment = pd.read_csv("data/sentiment.csv", index_col=0, parse_dates = True)
