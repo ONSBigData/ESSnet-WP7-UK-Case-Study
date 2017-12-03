@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn; seaborn.set()
 
 
-# Read the data
+# Read the data (data files have been produced by running script 2_get_sentiment.py)
 sentiment = pd.read_csv("data/sentiment.csv", index_col=0, parse_dates = True)
 comments = pd.read_csv("data/comments.csv", index_col=0, parse_dates = True)
 posts = pd.read_csv("data/posts.csv", index_col=0, parse_dates = True)

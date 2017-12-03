@@ -18,6 +18,7 @@ afinn.drop_duplicates('word', inplace = True)
 syuzhet = pd.read_csv("lexicons/syuzhet.csv")
 syuzhet.drop_duplicates('word', inplace = True)
 
+# nrc2 differ from the original nrc lexicon as 'trump', 'don' and 'jhon' keywords has been removed
 nrc = pd.read_csv("lexicons/nrc2.csv", header=0, names = [u'word', u'anger', u'anticipation', u'disgust', u'fear', u'joy',
        u'negative', u'positive', u'sadness', u'surprise', u'trust']) # use modified lexicon
 nrc.drop_duplicates('word', inplace = True)

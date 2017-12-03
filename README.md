@@ -1,9 +1,9 @@
 # ESSnet WP7 - Population #
 
 
-The Office for National Statistics (ONS) is involved in the Big Data ESSNet. This is a programme of work funded by Eurostat, coordinated by CBS Netherlands and involving other 20 NSI partners.
+The [Office for National Statistics (ONS)](https://www.ons.gov.uk/) is involved in the Big Data ESSNet. This is a programme of work funded by Eurostat, coordinated by CBS Netherlands and involving other 20 NSI partners.
 
-The aim of the Big Data ESSNet is to investigate how a combination of Big Data sources and existing official statistical data can be used to improve current statistics and create new statistics in statistical domains.
+The aim of the [Big Data ESSNet](https://webgate.ec.europa.eu/fpfis/mwikis/essnetbigdata/index.php/ESSnet_Big_Data) is to investigate how a combination of Big Data sources and existing official statistical data can be used to improve current statistics and create new statistics in statistical domains.
 There are 9 work packages. Work Package 7 (WP7) focuses on the statistical domains of Population, Tourism/border crossings and Agriculture.
 
 From these domains, ONS has conducted a short pilot study in the "Population" use case.
@@ -26,28 +26,23 @@ This pilot study was set to provide:
 
 ### Content ###
 
-The *WP7_ONS_files* folder contains the following files and folders:
-
-##### Report
-
-* **Final_doc.pdf** the final report document
+The *WP7-UK-scripts* folder contains the following files:
 
 ##### Python scripts
 
-* **collect_data.py** to collect data (comments and posts) from the Facebook API
-* **get_sentiment.py** to compute the sentiment using the different lexicons. The files generated are then saved in the **data** folder
-* **analysis.py** for reproducing the analysis and the charts of the report
+* **1_collect_data.py** to collect data (comments and posts) from the Facebook API
+* **2_get_sentiment.py** to compute the sentiment using the different lexicons.
+* **3_analysis.py** for reproducing the analysis and the charts of the report
 * **utils.py** containing some util functions
 
 ##### Folders
 
-* **images** folder which contains all images used in the final document and generated with the **analysis.py** file
-* **data** folder which contains the processed data for the analysis.
-    - **comments.csv** the processed comments collected through the Facebook API excluding empty comments
-    - **posts.csv** the processed posts collected through the Facebook API
-    - **sentiment.csv** the normalised sentiment scores obtained with the Vader, NRC, Syuzhet, AFinn and Bing lexicons
-    - **emotions.csv** the emotions scores calculated using the NRC lexicon
+* **images** folder which contains all images used in the final document and generated with the **3_analysis.py** file
 * **lexicons** folder which contains the lexicons used in the analysis, i.e. NRC, Syuzhet, AFinn and Bing in csv format
+
+##### Report
+
+* **Final_doc.pdf** the final report document
 
 ### Contributors ###
 

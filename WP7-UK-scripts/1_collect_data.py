@@ -116,78 +116,83 @@ def get_extra(url):
             'main_category' : main_category}
 
 
-### Data collection
-DAYS_DIFF = 6
 
-# Calculate timeframe for collection (24 hour period)
-epoch = datetime.datetime.utcfromtimestamp(0)
-today = datetime.datetime.combine(datetime.date.today(),
-                                  datetime.time(0,0))
+if __name__ == "__main__":
 
-def get_epochs(dd):
-    date = today - datetime.timedelta(dd)
-    delta = date - epoch
-    return "{:.0f}".format(delta.total_seconds())
+    # Example
+    ### Data collection
+    DAYS_DIFF = 6
+
+    # Calculate timestamps for start/end of collection (24 hour period)
+    epoch = datetime.datetime.utcfromtimestamp(0)
+    today = datetime.datetime.combine(datetime.date.today(),
+                                      datetime.time(0,0))
+
+    def get_epochs(dd):
+        date = today - datetime.timedelta(dd)
+        delta = date - epoch
+        return "{:.0f}".format(delta.total_seconds())
 
 
-day_start, day_end = [get_epochs(x) for x in (DAYS_DIFF, DAYS_DIFF-1)]
+    day_start, day_end = [get_epochs(x) for x in (DAYS_DIFF, DAYS_DIFF-1)]
 
 
-# Collect
-guardian_id = '10513336322'
 
-graph = GraphAPI(access_token)
-guardian_posts = graph.get_all_connections(guardian_id, 'posts',
-                                           since=day_start, until=day_end,
-                                           limit=100,
-                                           fields='message,created_time,id,link,shares,comments.limit(0).summary(total_count)')
-comments_list = []
-posts_list = []
+    # Collect
+    guardian_id = '10513336322'
 
-# Collect Post data
-for post in guardian_posts:
-    post_id = post['id']
-    reactions = graph.get_object(post_id, fields='reactions.type(LIKE).limit(0).summary(total_count).as(like),reactions.type(LOVE).limit(0).summary(total_count).as(love),reactions.type(WOW).limit(0).summary(total_count).as(wow),reactions.type(HAHA).limit(0).summary(total_count).as(haha),reactions.type(SAD).limit(0).summary(total_count).as(sad),reactions.type(ANGRY).limit(0).summary(total_count).as(angry),reactions.type(THANKFUL).limit(0).summary(total_count).as(thankful),reactions.type(NONE).limit(0).summary(total_count).as(total)')
-    post.update(reactions)
-    post = process_post(post)
-    posts_list.append(post)
+    graph = GraphAPI(access_token)
+    guardian_posts = graph.get_all_connections(guardian_id, 'posts',
+                                               since=day_start, until=day_end,
+                                               limit=100,
+                                               fields='message,created_time,id,link,shares,comments.limit(0).summary(total_count)')
+    comments_list = []
+    posts_list = []
 
-# Adding extra bits from the guardian
-for post in posts_list:
-    extra = get_extra(post['article_url'])
-    if extra:
-        post.update(extra)
+    # Collect Post data
+    for post in guardian_posts:
+        post_id = post['id']
+        reactions = graph.get_object(post_id, fields='reactions.type(LIKE).limit(0).summary(total_count).as(like),reactions.type(LOVE).limit(0).summary(total_count).as(love),reactions.type(WOW).limit(0).summary(total_count).as(wow),reactions.type(HAHA).limit(0).summary(total_count).as(haha),reactions.type(SAD).limit(0).summary(total_count).as(sad),reactions.type(ANGRY).limit(0).summary(total_count).as(angry),reactions.type(THANKFUL).limit(0).summary(total_count).as(thankful),reactions.type(NONE).limit(0).summary(total_count).as(total)')
+        post.update(reactions)
+        post = process_post(post)
+        posts_list.append(post)
 
-# Inserting posts collected in Mongo
-mongo = Mongo('facebook', 'posts')
-for post in posts_list:
-    mongo.process_item(post)
-mongo.close()
-del mongo
+    # Adding extra bits from the guardian
+    for post in posts_list:
+        extra = get_extra(post['article_url'])
+        if extra:
+            post.update(extra)
 
-# Collect Comments data
-for idx, post in enumerate(posts_list):
-    post_id = post['post_id']
-    print "Extracting %d comments for post %d ..." %(post['comment_count'], idx)
-    comments = graph.get_all_connections(post_id, 'comments',
-                                         limit=100,
-                                         fields='created_time,from,like_count,message,id,comment_count')
-    for comment in comments:
-        comment.update({'post_id':post_id})
-        comment = process_comment(comment)
-        comments_list.append(comment)
-        if comment.get('comment_count',0) > 0:
-            second_level_comments = graph.get_all_connections(comment['comment_id'], 'comments',
-                                         limit=100,
-                                         fields='created_time,from,like_count,message,id,comment_count,parent')
-            for second_level_comment in second_level_comments:
-                second_level_comment.update({'post_id':post_id})
-                second_level_comment = process_comment(second_level_comment)
-                comments_list.append(second_level_comment)
+    # Inserting posts collected in Mongo
+    mongo = Mongo('facebook', 'posts')
+    for post in posts_list:
+        mongo.process_item(post)
+    mongo.close()
+    del mongo
 
-# Inserting comments collected in Mongo
-mongo = Mongo('facebook', 'comments')
-for comment in comments_list:
-    mongo.process_item(comment)
-mongo.close()
-del mongo
+    # Collect Comments data
+    for idx, post in enumerate(posts_list):
+        post_id = post['post_id']
+        print "Extracting %d comments for post %d ..." %(post['comment_count'], idx)
+        comments = graph.get_all_connections(post_id, 'comments',
+                                             limit=100,
+                                             fields='created_time,from,like_count,message,id,comment_count')
+        for comment in comments:
+            comment.update({'post_id':post_id})
+            comment = process_comment(comment)
+            comments_list.append(comment)
+            if comment.get('comment_count',0) > 0:
+                second_level_comments = graph.get_all_connections(comment['comment_id'], 'comments',
+                                             limit=100,
+                                             fields='created_time,from,like_count,message,id,comment_count,parent')
+                for second_level_comment in second_level_comments:
+                    second_level_comment.update({'post_id':post_id})
+                    second_level_comment = process_comment(second_level_comment)
+                    comments_list.append(second_level_comment)
+
+    # Inserting comments collected in Mongo
+    mongo = Mongo('facebook', 'comments')
+    for comment in comments_list:
+        mongo.process_item(comment)
+    mongo.close()
+    del mongo

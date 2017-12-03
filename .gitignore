@@ -4,3 +4,15 @@
 *.pyc
 
 *.zip
+
+CMAnalysis/*
+
+CMData/*
+
+data/*
+
+DataVisualisation/*
+
+*.docx
+
+scripts/*
