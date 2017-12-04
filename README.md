@@ -24,26 +24,26 @@ This pilot study was set to provide:
 * An analysis of the results produced between the data sources and within different time units considered
 * An assessment of the Facebook users leaving comments to determine distribution of gender and residency, and how this relates to the Guardian readership
 
-### Content ###
+## Content
 
 The *WP7-UK-scripts* folder contains the following files:
 
-##### Python scripts
+### Python scripts
 
 * **1_collect_data.py** to collect data (comments and posts) from the Facebook API
 * **2_get_sentiment.py** to compute the sentiment using the different lexicons.
 * **3_analysis.py** for reproducing the analysis and the charts of the report
 * **utils.py** containing some util functions
 
-##### Folders
+### Folders
 
 * **images** folder which contains all images used in the final document and generated with the **3_analysis.py** file
 * **lexicons** folder which contains the lexicons used in the analysis, i.e. NRC, Syuzhet, AFinn and Bing in csv format
 
-##### Report
+## Report
 
 * **Final_doc.pdf** the final report document
 
-### Contributors ###
+## Contributors
 
 [Alessandra Sozzi](mailto:alessandra.sozzi@ons.gov.uk) and [Charles Morris](mailto:charles.morris@ons.gov.uk)
